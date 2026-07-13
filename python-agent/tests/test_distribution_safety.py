@@ -12,38 +12,20 @@ def _read(path: str) -> str:
 def test_no_liveavatar_secret_defaults_in_source():
     live_key_pattern = re.compile(r"lk_live_[A-Za-z0-9]{20,}")
     for path in [
-        "broadcast/agent.py",
-        "chat/agent.py",
         "interview/agent.py",
-        "talkshow/agent.py",
-        "teaching/config.py",
+        "hub/hub.py",
+        "hub/config_store.py",
+        "llm_client.py",
     ]:
         text = _read(path)
         assert not live_key_pattern.search(text), path
 
 
-def test_distribution_templates_and_package_script_exist():
+def test_env_template_exists_with_empty_secrets():
     assert (ROOT / ".env.example").exists()
-    assert (ROOT / "config/crypto_market.example.yaml").exists()
-    assert (ROOT / "config/products.example.yaml").exists()
-    assert (ROOT / "scripts/package_python_agent.sh").exists()
-
-    package_script = _read("scripts/package_python_agent.sh")
-    assert 'rm -f "$DIST_DIR/$PACKAGE_NAME.zip"' in package_script
-    for excluded in [
-        ".venv",
-        "node_modules",
-        ".omc",
-        ".claude",
-        "__pycache__",
-        ".pytest_cache",
-        ".ruff_cache",
-        "test-report.json",
-        "course-test-report.json",
-    ]:
-        assert excluded in package_script
-
-    assert "frontend" in package_script
-    frontend_section = package_script.split('"$PROJECT_ROOT/frontend/"', 1)[1]
-    assert "--exclude \".omc\"" in frontend_section
-    assert "--exclude \".ruff_cache\"" in frontend_section
+    text = _read(".env.example")
+    for var in ("LIVEAVATAR_API_KEY", "DEEPSEEK_API_KEY", "DASHSCOPE_API_KEY"):
+        assert f"{var}=" in text, var
+    for line in text.splitlines():
+        if "_KEY=" in line and not line.lstrip().startswith("#"):
+            assert line.strip().endswith("="), f"secret value committed: {line}"
