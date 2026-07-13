@@ -1,422 +1,81 @@
-# Live Avatar Python Agents
+# Interview Agent — 开发文档
 
-Python-based digital human agents for the Live Avatar platform.
+数字人模拟面试的 Python 实现：`interview/` 是面试 agent 本体，`hub/` 是配置控制台。产品级说明与快速开始见[根 README](../README.md)。
 
----
+## 模块职责
 
-## Project Structure
+| 模块 | 职责 |
+| --- | --- |
+| `interview/agent.py` | HTTP 服务与装配：每次 `/api/start-session` 重读 YAML、重建控制器；档案接入 API |
+| `interview/controller.py` | 工作流核心：17 状态的面试状态机（提问/听答/思考提醒/超时跳题/追问/收尾） |
+| `interview/interview_manager.py` | 加载 `config/interview.yaml`；persona 上下文与知识库块构建；系统提示词/开场白渲染 |
+| `interview/prompts.py` | 全部 LLM 提示词与口播话术的内置默认值 + `{placeholder}` 渲染器 |
+| `interview/question_planner.py` | 按题库顺序出下一题 |
+| `interview/answer_evaluator.py` | 回答评估（LLM JSON，失败降级启发式） |
+| `interview/follow_up_decider.py` | 追问判定（LLM 判定 + 规则兜底） |
+| `interview/follow_up_planner.py` | 追问话术生成（纯模板） |
+| `interview/report_generator.py` | 终局多维报告（LLM + 统计兜底） |
+| `interview/profile.py` | 面试准备档案：简历文件解析（pypdf/python-docx）+ 岗位/JD/简历定向写入 YAML |
+| `interview/listener.py` / `asr_manager.py` | LiveAvatar 事件桥 + Qwen ASR 实时转写 |
+| `interview/session_store.py` | 面试状态 JSON 落盘（`/tmp/liveavatar-interviews`） |
+| `hub/hub.py` | 控制台：凭证 API、agent 子进程启停与日志、面试配置/预览 API |
+| `hub/config_store.py` | 凭证与端口存储（`config/hub_settings.json`，掩码/600 权限） |
+| `hub/interview_config.py` | interview.yaml 表单化读写：默认值填充、保存前真实解析器校验、默认值剔除 |
+| `llm_client.py` | OpenAI 兼容异步 LLM 客户端（共享系统提示词与上下文） |
+
+## 面试工作流
 
 ```
-python-agent/
-├── chat/                     # Agent A: Conversational digital human (interactive)
-│   ├── agent.py                  # Entry point — HTTP server + ASR + LLM (port 8080)
-│   └── QUICKSTART.md
-├── broadcast/                # Agent B: E-commerce live broadcast (autonomous)
-│   ├── agent.py                  # Entry point — HTTP server + config + LLM (port 8081)
-│   ├── controller.py             # Broadcast queue engine + state machine
-│   ├── product_manager.py        # YAML config loader + video/script management
-│   ├── script_generator.py       # LLM-driven product script generation
-│   ├── tiktok_monitor.py         # TikTok Live chat listener (comments, joins)
-│   └── QUICKSTART.md
-├── teaching/                 # Agent C: Teaching digital human (multi-agent classroom)
-│   ├── agent.py                   # Entry point — HTTP server + ASR (port 8082)
-│   ├── teaching_controller.py    # 8-state state machine + lecture loop
-│   ├── course_manager.py         # YAML course loading + validation
-│   ├── course_component.py       # UI component protocol (quiz, whiteboard, cards)
-│   ├── persona_manager.py        # Teacher & classmate persona → LLM prompts
-│   ├── classmate_engine.py       # AI classmate behavior + speech generation
-│   ├── manager_agent.py          # Adaptive classroom pacing decisions
-│   ├── course_generator.py       # One-click LLM course generation from topic
-│   └── QUICKSTART.md
-├── interview/                # Interview digital human (structured mock interview)
-│   ├── agent.py                  # Entry point — HTTP server + ASR + interview controller (port 8083)
-│   ├── controller.py             # Question/exchange loop + metadata tracking
-│   ├── interview_manager.py      # YAML interview config loader
-│   ├── answer_evaluator.py       # LLM JSON evaluation + fallback
-│   ├── question_planner.py       # Next-question and follow-up selection
-│   ├── report_generator.py       # Final report generation
-│   ├── listener.py               # LiveAvatar / ASR event bridge
-│   └── QUICKSTART.md
-├── llm_client.py             # Shared async LLM client (OpenAI-compatible)
-├── config/
-│   ├── products.yaml         # Product/script/video configuration
-│   ├── interview.yaml        # Interview persona, questions, rubric
-│   └── courses/
-│       └── thinking_4-10.yaml     # Kids thinking course (3 chapters, age 4-10)
-├── tests/
-│   ├── teaching/             # Teaching agent tests
-│   │   ├── test_classmate_engine.py
-│   │   ├── test_course_component.py
-│   │   ├── test_course_manager.py
-│   │   ├── test_manager_agent.py
-│   │   ├── test_speech_gating.py
-│   │   ├── test_teaching_agent_session.py
-│   │   └── test_teaching_controller.py
-│   ├── broadcast/            # Broadcast agent tests
-│   │   ├── test_controller.py
-│   │   ├── test_product_manager.py
-│   │   └── test_script_generator.py
-│   └── test_llm_client.py
-├── requirements.txt
-├── pytest.ini
-└── README.md
+开场白 → ┌─ 提问 → 听答（可配思考提醒 N 次，硬超时跳题）
+         │      → 答后：衔接语 + 后台 LLM 评估
+         │      → LLM 判定是否追问（每题上限）→ 追问 或 下一题 ─┐
+         └──────────────────────────────────────────────────┘
+题库耗尽 → 汇总报告 → 结束语        异常轨：累计/连续跳题超限 → 提前终止
 ```
 
----
+节奏由平台 `session.state=IDLE` 驱动（说完一句才发下一句），30s 看门狗防死锁；评估在后台并行，不阻塞对话。
 
-## Setup
+## interview.yaml 配置段
 
-### 1. Install dependencies
+| 段 | 内容 | 缺省行为 |
+| --- | --- | --- |
+| `interview` | 标题/语言/时长/难度/每题追问上限 | 内置默认 |
+| `interviewer` | 人设：姓名/风格/规则 — 注入全部 LLM 提示词 | 通用人设 |
+| `candidate` | 目标岗位/背景 — 面试页「面试准备」可写 | — |
+| `rubric` + `question_sets` | 评分维度与题库（题面/考察点/期望信号/红旗） | 必填 |
+| `knowledge` | 资料条目（JD/简历/领域文档）+ 注入字数预算 | 无注入 |
+| `speech` | 开场白模板、转场/跳题/结束语、衔接语、思考提醒 | prompts.py 默认 |
+| `workflow` | 各超时秒数与跳题阈值 | prompts.py 默认 |
+| `prompts` | 4 个 LLM 模板（system/evaluator/follow_up_decider/report） | prompts.py 默认 |
+
+占位符（模板内可用）：`{interviewer_name} {interviewer_style} {interviewer_rules} {target_role} {candidate_background} {title} {duration_minutes} {knowledge} {knowledge_block}` + 各模板运行时字段。未知占位符原样保留。
+
+## API
+
+面试 agent（默认 :8083）：
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `POST` | `/api/start-session` | 创建 LiveAvatar 会话（每次重读配置） |
+| `POST` | `/api/stop-session` | 结束会话 |
+| `POST` | `/api/interview/start` / `stop` | 面试流程启停 |
+| `GET` | `/api/interview/status` | 状态/进度/字幕/终局报告 |
+| `POST` | `/api/interview/audio-input` | 麦克风开关 |
+| `GET/POST` | `/api/interview/profile` | 面试准备档案；POST 为 multipart（`target_role`/`jd_text`/`resume_text`/`resume_file`，10MB） |
+
+Hub（默认 :8000，仅 127.0.0.1）：
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `GET/POST` | `/api/config` | 平台/LLM/ASR 凭证与端口（响应掩码，磁盘 600） |
+| `GET` | `/api/agents` | agent 状态（running/external/stopped） |
+| `POST` | `/api/agents/start` / `stop` | 以保存配置为环境变量拉起/终止子进程 |
+| `GET` | `/api/agents/logs?name=` | 子进程日志（内存环形缓冲） |
+| `GET/POST` | `/api/interview-config` | 面试配置表单读写（保存前真实解析器校验） |
+| `POST` | `/api/interview-config/preview` | 渲染最终系统提示词/开场白（不落盘） |
+
+## 测试
 
 ```bash
-cd python-agent
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+pytest tests/ -q        # hub + interview + llm_client + 分发安全
 ```
-
-### 2. Environment variables
-
-```bash
-# Required
-export LIVEAVATAR_API_KEY="lk_live_xxx"       # Live Avatar platform key
-export LIVEAVATAR_AVATAR_ID="avatar_xxx"      # Avatar ID (required)
-export DEEPSEEK_API_KEY="sk-xxx"              # LLM API key (DeepSeek or OpenAI)
-
-# Optional — defaults shown
-export DEEPSEEK_BASE_URL="https://api.deepseek.com"  # LLM base URL
-export DEEPSEEK_MODEL="deepseek-v4-flash"     # LLM model name
-export BROADCAST_HTTP_PORT="8081"             # Port for broadcast agent (agent.py uses 8080)
-export INTERVIEW_HTTP_PORT="8083"             # Port for interview agent
-```
-
-For OpenAI (ChatGPT):
-
-```bash
-export DEEPSEEK_API_KEY="sk-your-openai-key"
-export DEEPSEEK_BASE_URL="https://api.openai.com/v1"
-export DEEPSEEK_MODEL="gpt-4o"
-```
-
----
-
-## Agent A: Conversational Digital Human
-
-**File:** `chat/agent.py` | **Port:** 8080
-
-An interactive digital human that listens via ASR and responds with LLM-generated answers.
-
-```
-User speaks → Qwen ASR → DeepSeek LLM → Platform TTS → Avatar speaks
-```
-
-### Run
-
-```bash
-python chat/agent.py
-# Open http://localhost:8080
-```
-
-### Features
-- Real-time speech recognition (DashScope Qwen ASR)
-- Streamed LLM responses with typewriter effect
-- Voice interruption (speak while avatar is talking to interrupt)
-- Conversation history management
-
-### API
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/start-session` | Start a new session → returns `userToken`, `sfuUrl` |
-| `POST` | `/api/stop-session` | Stop current session |
-| `POST` | `/api/interrupt` | Interrupt current response |
-| `GET`  | `/api/logs` | Fetch server logs |
-| `POST` | `/api/clear-logs` | Clear server logs |
-
----
-
-## Agent B: E-commerce Live Broadcast
-
-**File:** `broadcast/agent.py` | **Port:** 8081
-
-An autonomous digital human for live shopping. Plays pre-written product scripts in a queue, switches background videos, listens to TikTok live comments, and auto-regenerates fresh scripts.
-
-```
-Product YAML → Broadcast queue → scene.switchVideo → system.prompt (TTS)
-                                    ↑
-                              TikTok comments/joins → LLM reply → enqueue
-```
-
-### Run
-
-```bash
-python broadcast/agent.py
-# Open http://localhost:8081
-```
-
-### Configuration (`config/products.yaml`)
-
-```yaml
-settings:
-  loop: true               # Queue loops after all products played
-  lang: en                 # "zh" for Chinese, "en" for English
-  default_tts_speed: 1.0
-  default_pause_ms: 300    # Pause between scripts (ms)
-  default_loop_video: 01KTT909B2M3PABS719FN7Z3WA
-
-  # TikTok Live monitoring (optional)
-  live_url: "https://www.tiktok.com/@username/live"
-  comment_cooldown_s: 10   # Min seconds between comment replies
-  join_cooldown_s: 30      # Min seconds between join welcomes
-
-  # Proxy for TikTok (if needed)
-  tiktok_web_proxy: "http://127.0.0.1:7890"
-  tiktok_ws_proxy: "http://127.0.0.1:7890"
-
-products:
-  - id: "1731199058452648921"
-    name: "Product Title"
-    description: "Product description text for script generation"
-    url: "https://www.tiktok.com/shop/pdp/1731199058452648921"
-    loop_video: 01KTT909B2M3PABS719FN7Z3WA
-    tts_speed: 1.0
-    pause_after_script_ms: 800
-    video_scripts:
-      - video: 01KTT909B2M3PABS719FN7Z3WA    # onceVideos (showcase)
-        scripts:
-          - "Script segment 1..."
-          - "Script segment 2..."
-      - video: 01KTT92T3XEJRMEYSMWT3B3CYK
-        scripts:
-          - "Script segment 3..."
-```
-
-### Features
-- **Queue-based broadcast** — products play in order, all video-script pairs sequentially
-- **scene.switchVideo** — automatic video switching with `onceVideos` + `loopVideos`
-- **Platform-driven pacing** — waits for `session.state=IDLE` before next script (zero gaps)
-- **75% auto-regeneration** — background LLM generates fresh scripts before current batch ends
-- **TikTok Live monitoring** — rate-limited comment replies & join welcomes inserted into queue
-- **Multi-language** — Chinese (`zh`) and English (`en`) prompt templates
-
-### API
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/broadcast/start` | Start broadcast queue |
-| `POST` | `/api/broadcast/stop` | Stop broadcast |
-| `POST` | `/api/broadcast/pause` | Pause after current script |
-| `POST` | `/api/broadcast/resume` | Resume broadcast |
-| `POST` | `/api/broadcast/skip` | Skip current product |
-| `GET`  | `/api/broadcast/status` | Current state, queue position |
-| `POST` | `/api/comment` | External comment → insert reply |
-| `POST` | `/api/product/generate` | Generate scripts from product info |
-| `POST` | `/api/product/scripts` | Manually append/update scripts |
-| `POST` | `/api/product/reload` | Hot-reload `products.yaml` |
-| `POST` | `/api/start-session` | Compatibility with frontend |
-| `GET`  | `/api/session-info` | Get session details |
-
-### Quick Start
-
-```bash
-# 1. Write product name + description in products.yaml
-
-# 2. Generate scripts via LLM
-curl -X POST http://localhost:8081/api/product/generate \
-  -H "Content-Type: application/json" \
-  -d '{"productId":"1731199058452648921"}'
-
-# 3. Start broadcast (auto-starts on scene.ready)
-# Or manually: curl -X POST http://localhost:8081/api/broadcast/start
-
-# 4. Simulate viewer comment
-curl -X POST http://localhost:8081/api/comment \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Does this ship internationally?"}'
-```
-
----
-
-## Agent C: Teaching Digital Human (Multi-Agent Classroom)
-
-**Package:** `teaching/` | **Entry:** `teaching/agent.py` | **Port:** 8082
-
-A multi-agent interactive classroom for children aged 4-10. Features an AI teacher with configurable persona, AI classmates that participate in discussions, adaptive pacing, and one-click course generation.
-
-```
-Course YAML → TeachingController → LLM-polished lecture → Platform TTS
-                    ↑                       ↓
-              Student raise-hand    AI Classmate interjects
-                    ↓                       ↓
-              Qwen ASR → QA → Transition → Resume from breakpoint
-```
-
-### Run
-
-```bash
-python teaching/agent.py
-# Open http://localhost:8082
-```
-
-### Features
-- **Chapter-based lectures** — skeleton points polished by LLM into child-friendly speech
-- **Raise-hand Q&A** — student interrupts via button + voice, teacher answers and resumes
-- **AI Classmates** — configurable AI students that ask questions and participate in quizzes
-- **Adaptive Scheduling** — Manager Agent adjusts pacing based on student engagement
-- **Interactive Quiz** — multiple choice with emoji feedback and encouragement animations
-- **Whiteboard** — step-by-step knowledge point display with CSS animations
-- **One-Click Generation** — full course generated from a topic description via LLM
-- **Child-Optimized** — slower TTS (0.9x), longer ASR silence (800ms), encouraging tone
-
-### Course Configuration
-
-```yaml
-# config/courses/thinking_4-10.yaml
-course:
-  title: "思维小达人"
-  lang: zh
-
-  persona:                             # Teacher persona (v2)
-    name: "小思老师"
-    style: "亲和活泼"
-    rules:
-      - "每句话不超过15个字"
-      - "先用小朋友熟悉的事物打比方"
-
-  classmates:                          # AI classmates (v2)
-    - name: "小明"
-      style: "好奇心强、偶尔问天真问题"
-
-chapters:
-  - id: "intro"
-    title: "引入"
-    skeleton:
-      - "讲一个有趣的小故事"
-      - "向小朋友提问"
-    interaction:
-      prompt: "你会怎么做呀？"
-
-  - id: "quiz_chapter"
-    title: "测验"
-    skeleton:
-      - "讲解知识点"
-    quiz:
-      question: "小明掉进了哪个小陷阱？"
-      options:
-        - { key: "A", text: "大家都这样", correct: true }
-        - { key: "B", text: "大人说的都对", correct: false }
-      explanation_correct: "太棒了！🌟"
-      explanation_wrong: "差一点点！💪"
-```
-
-### API
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/start-session` | Start teaching session |
-| `POST` | `/api/stop-session` | End session |
-| `POST` | `/api/teaching/start` | Start lecture |
-| `POST` | `/api/teaching/pause` | Pause lecture |
-| `POST` | `/api/teaching/resume` | Resume lecture |
-| `POST` | `/api/teaching/raise-hand` | Student raises hand → pause + open mic |
-| `POST` | `/api/teaching/cancel-hand` | Cancel raise-hand |
-| `POST` | `/api/teaching/quiz-answer` | Submit quiz answer `{chapter_id, answer}` |
-| `POST` | `/api/teaching/generate`  | Generate course from `{topic, age}` |
-| `GET`  | `/api/teaching/status` | Full state: chapter, quiz, whiteboard, messages |
-
-### Quick Start
-
-```bash
-# 1. Use default course or generate a new one
-curl -X POST http://localhost:8082/api/teaching/generate \
-  -H "Content-Type: application/json" \
-  -d '{"topic": "什么是逻辑思维", "age": "4-10"}'
-
-# 2. Open http://localhost:8082 → Connect → Start learning
-```
-
----
-
-## Agent D: Interview Digital Human
-
-**Package:** `interview/` | **Entry:** `interview/agent.py` | **Port:** 8083
-
-A structured mock interview avatar. The avatar asks one question at a time,
-waits for the candidate's voice answer, evaluates the response, asks bounded
-follow-ups, then produces a final report.
-
-```
-Interview YAML → InterviewController → system.prompt + metadata
-                         ↑                         ↓
-                   Qwen ASR ← candidate voice ← input.voice/asr + metadata
-                         ↓
-                 evaluator → follow-up or next question → report
-```
-
-### Run
-
-```bash
-python interview/agent.py
-# Open http://localhost:8083
-```
-
-### API
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/start-session` | Start LiveAvatar session |
-| `POST` | `/api/stop-session` | Stop LiveAvatar session |
-| `POST` | `/api/interview/start` | Start interview loop |
-| `POST` | `/api/interview/stop` | Stop interview loop |
-| `GET`  | `/api/interview/status` | Current state, question, exchange, report |
-| `GET`  | `/api/session-info` | Get session details |
-
----
-
-## Tests
-
-```bash
-pytest tests/ -v
-```
-
----
-
-## Architecture Notes
-
-| Module | Responsibility |
-|--------|---------------|
-| `llm_client.py` | Async LLM client (DeepSeek/OpenAI compatible). Stateless per request. |
-| `broadcast/product_manager.py` | Loads `config/products.yaml`, manages video-script random selection, CRUD. |
-| `broadcast/script_generator.py` | Fetches product info + generates 8-segment broadcast scripts via LLM. |
-| `broadcast/controller.py` | Queue engine with IDLE-driven pacing, video switching, pause/resume. |
-| `broadcast/tiktok_monitor.py` | Connects to TikTok Live WS, rate-limited comment/join callbacks. |
-| `chat/agent.py` | Original interactive agent (ASR → LLM → TTS). |
-| `teaching/teaching_controller.py` | 8-state machine for LECTURING ↔ ANSWERING ↔ QUIZZING. |
-| `teaching/persona_manager.py` | Generates role-specific system prompts from persona config. |
-| `teaching/classmate_engine.py` | AI classmate behavior decision + speech generation. |
-| `teaching/manager_agent.py` | Lightweight LLM decisions for adaptive pacing. |
-| `teaching/course_generator.py` | Two-stage LLM generation: outline → full course YAML. |
-| `interview/controller.py` | Structured interview state machine with question/exchange metadata. |
-| `interview/listener.py` | Developer ASR bridge that sends `input.voice.*` and `input.asr.*` metadata. |
-| `interview/answer_evaluator.py` | Parses LLM JSON evaluations and supplies fallback scoring. |
-
-### TTS Pacing
-
-Teaching Controller uses platform `session.state=IDLE` events to know when TTS finishes. After each prompt: `await tts_idle.wait()` → `tts_idle.clear()` → send next prompt. This eliminates gaps. A 30s timeout prevents deadlock.
-
-### Interrupt Flow
-
-```
-Student clicks 举手提问 → raise_hand() saves breakpoint → state=ANSWERING
-Student speaks → VAD speech_started → control.interrupt + voice.start
-ASR transcript → QA flow → answer → transition → resume from breakpoint
-```
-
----
-
-## Quickstart Guides
-
-- [Chat Digital Human](chat/QUICKSTART.md) — `chat/agent.py`, interactive conversation
-- [Live Shopping Broadcast](broadcast/QUICKSTART.md) — `broadcast/agent.py`, autonomous product narration
-- [Teaching Classroom](teaching/QUICKSTART.md) — `teaching/agent.py`, multi-agent interactive classroom
-- [Interview Avatar](interview/QUICKSTART.md) — `interview/agent.py`, structured mock interview
