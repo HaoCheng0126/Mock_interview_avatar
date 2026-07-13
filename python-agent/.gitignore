@@ -1,0 +1,30 @@
+.DS_Store
+
+# Local agent/editor state
+.claude/
+.omc/
+.superpowers/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+
+# Local credentials saved by the hub console
+config/hub_settings.json
+
+# Generated output
+dist/
+screenshots/
+test-report.json
+course-test-report.json
+
+# Local working notes
+task_plan.md
+findings.md
+progress.md

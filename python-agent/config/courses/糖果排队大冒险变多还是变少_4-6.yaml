@@ -1,0 +1,180 @@
+course:
+  title: 糖果排队大冒险：变多还是变少？
+  lang: zh
+  default_tts_speed: 0.85
+  persona:
+    name: 小思老师
+    style: 动作和游戏主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.85
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向4-6岁幼儿园中大班小朋友的思维课老师
+
+      - 教学策略：动作和游戏主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音夸张甜美，尾音上扬，像动画片里的角色
+
+      - 语速很慢，每句话不超过10个字
+
+      - 大量使用「哇！」「太棒了！」「击个掌！」「抱抱！」等情绪化表达
+
+      - 多用叠词和拟声词：咚咚咚、哗啦啦、喵喵喵
+
+      - 称呼学生为「宝贝」或「小可爱」'
+    goal: '- 通过游戏和动作让小朋友参与进来
+
+      - 把每个知识点变成一个可以动手做的小任务
+
+      - 让小朋友觉得自己在"玩"而不是在"学"
+
+      - 在提出互动指令后给小朋友充分的反应时间'
+    workflow: '- 1. 夸张的打招呼（比如：小可爱～我们来玩一个超好玩的游戏！）
+
+      - 2. 用身体动作引入要点（比如：来，跟老师一起拍拍手！）
+
+      - 3. 慢慢讲出核心内容
+
+      - 4. 击掌/跳舞/放烟花庆祝'
+    scope: '- 每句话不超过10个字
+
+      - 每章内容控制在2分钟内讲完
+
+      - 不要连续讲超过3句话，中间留白让孩子跟上
+
+      - 输出长度：2-3句，总共不超过50字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 糖果拉长啦！
+  skeleton:
+  - text: 两排糖果一样多，拉长一排后，宝宝觉得变多了？
+    experience:
+      primitive: sort_order
+      goal: 观察糖果排列变化，理解数量不变
+      title: 一排糖果一排拉长
+      prompt: 一起看看两排糖果，拉长的那排真的变多了吗？
+      props:
+        items:
+        - {label: "🍬 一排糖果", value: 5}
+        - {label: "🍬 拉长糖果", value: 5}
+        sortBy: value
+        mode: compare
+  - text: 跳一跳，说"一样多"还是"变多了"，然后击掌庆贺！
+    experience:
+      primitive: sort_order
+      goal: 通过动作确认糖果数量不变
+      title: 比一比说一样多
+      prompt: 用手指一指，说说看两排糖果是一样多还是这边变多了？
+      props:
+        items:
+        - {label: "🍬 一排糖果", value: 5}
+        - {label: "🍬 拉长糖果", value: 5}
+        sortBy: value
+        mode: compare
+  interaction:
+    prompt: 一起把小手慢慢拉长，像拉长糖果一样！
+    expect_keywords:
+    - 拉长
+    - 变少
+- id: chapter_2
+  title: 小手指点一点
+  skeleton:
+  - text: 伸出小手指，一颗一颗数糖果，原来还是那么多！
+    experience:
+      primitive: sort_order
+      goal: 通过逐一点数验证数量不变
+      title: 一颗一颗数一数
+      prompt: 伸出小手指，一颗一颗地点一点，数一数两排糖果各有多少颗！
+      props:
+        items:
+        - {label: "🍬 一排糖果", value: 5}
+        - {label: "🍬 拉长糖果", value: 5}
+        sortBy: value
+        mode: compare
+  - text: 数完要放烟花哦——嘭嘭嘭，奖励自己小星星！
+    experience:
+      primitive: sort_order
+      goal: 庆祝数数完成，强化数量守恒记忆
+      title: 数好啦放烟花
+      prompt: 再数一遍，然后大声说出答案，给自己放个烟花！
+      props:
+        items:
+        - {label: "🍬 一排糖果", value: 5}
+        - {label: "🍬 拉长糖果", value: 5}
+        sortBy: value
+        mode: compare
+  quiz:
+    question: 伸出你的小手指，点一点糖果！糖果变多了还是变少了？🍬
+    options:
+    - key: A
+      text: 变多了 🍬🍬🍬🍬🍬 🎉
+      correct: true
+    - key: B
+      text: 变少了 🍬 🥺
+      correct: false
+    - key: C
+      text: 变成小汽车了 🚗
+      correct: false
+    explanation_correct: 哇！你点一点，糖果就变多啦！你真棒！👏
+    explanation_wrong: 再想一想哦，小手指点一点，糖果是变多还是变少呢？看看，是不是变多了呀？🍬🍬🍬
+- id: chapter_3
+  title: 糖果舞会
+  skeleton:
+  - text: 把糖果排成圆形、三角形，还是一样多，和宝宝一起跳舞！
+    experience:
+      primitive: sort_order
+      goal: 理解不同排列方式不影响数量
+      title: 圆形三角排排队
+      prompt: 看看排成圆形和三角形的糖果，它们的数量一样多吗？
+      props:
+        items:
+        - {label: "🍬 一排糖果", value: 5}
+        - {label: "🍬 拉长糖果", value: 5}
+        sortBy: value
+        mode: compare
+  - text: 转个圈，拍手说"变多？没变多！"，然后拥抱一下。
+    experience:
+      primitive: sort_order
+      goal: 用动作巩固数量守恒概念
+      title: 转圈说没变多
+      prompt: 转个圈，拍三下手，然后大声告诉老师糖果变多了还是没变多？
+      props:
+        items:
+        - {label: "🍬 一排糖果", value: 5}
+        - {label: "🍬 拉长糖果", value: 5}
+        sortBy: value
+        mode: compare
+  interaction:
+    prompt: 请和老师一起拍三下手，然后告诉老师糖果是变多了还是变少了？
+    expect_keywords:
+    - 拍手
+    - 三
+    - 变多
+    - 变少

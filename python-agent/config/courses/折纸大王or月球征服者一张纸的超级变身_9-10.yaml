@@ -1,0 +1,229 @@
+course:
+  title: 折纸大王or月球征服者？一张纸的超级变身
+  lang: zh
+  default_tts_speed: 0.92
+  persona:
+    name: 小思老师
+    style: 策略与深度互动
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.92
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向9-10岁小学中高年级小朋友的思维课老师
+
+      - 教学策略：策略与深度互动
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音清晰有力，语速可以适当加快
+
+      - 每句话不超过20个字，但可以用更复杂的句式和逻辑词
+
+      - 用"挑战者"语气：敢不敢试试？看看你能不能比老师先想到？
+
+      - 称赞话术强调聪明感：「这个思路很厉害！」「你是怎么想到的？」
+
+      - 称呼学生为「小挑战者」或「小天才」'
+    goal: '- 挑战孩子的思维能力，让他们觉得"我变聪明了"
+
+      - 通过追问和PK激发思考深度
+
+      - 鼓励孩子用语言表达自己的思考过程
+
+      - 不满足于正确答案，追问"为什么"'
+    workflow: '- 1. 抛出一个有趣的挑战或谜题
+
+      - 2. 引导孩子推理和发现
+
+      - 3. 追问「你怎么想的？」让孩子表达思维过程
+
+      - 4. 总结+升级：「下一关更难，敢不敢来？」'
+    scope: '- 每句话不超过20个字
+
+      - 每个要点展开成4-5句
+
+      - 可以使用简单的逻辑连接词（因为/所以/但是）
+
+      - 输出长度：4-5句，总共不超过120字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 一张纸的挑战：你能折几次？
+  skeleton:
+  - text: 拿出一张A4纸，试试你能对折几次？就这薄薄一张纸，最多7次！是不是觉得不可能再多了？
+    experience:
+      primitive: paper_fold_explorer
+      goal: 尝试手动对折，感受物理限制（最多约7次）
+      prompt: 点击"对折一次"按钮，看看最多能折多少次。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 0
+  - text: 想象一下，如果有一张足够大的纸，对折30次会怎样？比一栋楼高？还是比珠峰高？
+    experience:
+      primitive: paper_fold_explorer
+      goal: 用30次折叠演示指数增长可以超越常识
+      prompt: 点击"折到30次"，看看这一小摞纸能长多高。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 30
+  - text: 秘密来了：每次对折，厚度变成原来的2倍！这就是指数增长，威力超乎想象。
+    experience:
+      primitive: paper_fold_explorer
+      goal: 理解指数增长——每次翻倍，不是每次加一点
+      prompt: 分别点击"折到10次"和"折到20次"，观察厚度变化规律。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 0
+  interaction:
+    prompt: 你觉得一张纸能折超过7次吗？为什么？
+    expect_keywords:
+    - 厚度
+    - 指数增长
+    - 限制
+- id: chapter_2
+  title: 0.1毫米的怪物：对折30次有多厚？
+  skeleton:
+  - text: 算一算：0.1毫米对折1次是0.2毫米，2次是0.4毫米…30次是多少？你会被数字吓到！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 体验指数增长的初期——看似微不足道
+      prompt: 从0次开始，一步步点击"对折一次"到5次，感受厚度变化。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 0
+  - text: 答案：大约107公里！比珠穆朗玛峰（8848米）还高12倍！真的是"纸峰"啊！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 展示30次折叠后厚度达到107公里，远超常识想象
+      prompt: 点击"折到30次"，看看折纸厚度如何超越珠穆朗玛峰。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 30
+  - text: 现在和AI同学PK：谁先算出对折20次的厚度？记住要用乘法，别一个一个加哦！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 先观察再估算，培养指数思维
+      prompt: 点击"折到10次"看看多厚，再试试15次、20次，思考计算规律。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 0
+  quiz:
+    question: 一张纸厚0.1毫米，对折30次后，厚度大约是多少？
+    options:
+    - key: A
+      text: 3毫米，因为0.1毫米×30=3毫米
+      correct: false
+    - key: B
+      text: 约1米，比课桌高一点
+      correct: false
+    - key: C
+      text: 约100米，相当于30层楼高
+      correct: false
+    - key: D
+      text: 超过100公里，比12座珠穆朗玛峰还高
+      correct: true
+    explanation_correct: 你太聪明了！指数增长可不是简单的乘法哦，对折1次厚度翻倍，30次后就是2^30倍，大约是107公里，相当于12座珠穆朗玛峰叠起来！
+    explanation_wrong: 你是怎么想的？是不是觉得30次乘以0.1毫米就行了？但注意，每对折一次厚度都会加倍，所以是2×2×2×……连乘30次，结果可比3毫米大得多哦！再想想吧。
+  interaction:
+    prompt: 一张纸对折30次，你觉得能到达月球吗？为什么？
+    expect_keywords:
+    - 对折
+    - 厚度
+    - 指数增长
+    - 月球
+    - 距离
+    - 可能
+    - 不可能
+- id: chapter_3
+  title: 折纸登月计划：打破线性思维
+  skeleton:
+  - text: 月球离我们约384400公里。对折一张纸多少次才能碰到月亮？42次！你敢信？
+    experience:
+      primitive: paper_fold_explorer
+      goal: 展示42次折叠即可达到月球，震撼感受指数爆炸
+      prompt: 点击"折到42次"——看一张纸如何征服月球距离。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 42
+  - text: 为什么我们总觉得不可能？因为线性思维让我们认为每次只增加一点点，但指数爆炸会骗过大脑。
+    experience:
+      primitive: paper_fold_explorer
+      goal: 对比线性增长和指数增长，理解大脑为什么容易被骗
+      prompt: 试试10次、20次、30次、42次，对比每次增加的厚度差距。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 0
+  - text: 批判性思考：有人说"折纸是玩，数学是学"，你觉得这句话哪里错了？玩中学才是真聪明！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 自由探索巩固理解，再引出批判性思考
+      prompt: 自由折叠探索，看看每一个折数对应的惊人厚度。
+      props:
+        mode: fold
+        thickness: 0.1
+        maxFolds: 42
+        folds: 0
+  quiz:
+    question: 一张纸的厚度大约0.1毫米，对折一次厚度翻倍。要够到月亮（约38万公里远），最少需要对折多少次？
+    options:
+    - key: A
+      text: 42次
+      correct: true
+    - key: B
+      text: 100次
+      correct: false
+    - key: C
+      text: 1000次
+      correct: false
+    - key: D
+      text: 10次
+      correct: false
+    explanation_correct: 你太聪明了！没错，只需要42次！因为每次对折厚度都×2，2的42次方约等于44万公里，刚好超过38万公里。这就是指数增长的魔力，打破线性思维！
+    explanation_wrong: 你是怎么想的？是不是觉得42次太少，或者100次更保险？其实，每次对折厚度会变成原来的2倍，不是加一倍哦。2的10次方只有1024倍，根本不够。而2的42次方已经大到惊人啦！再想想？
+  interaction:
+    prompt: 一张纸要折多少次才能到月球？你怎么想的？
+    expect_keywords:
+    - 42
+    - 指数
+    - 翻倍
+    - 不可能

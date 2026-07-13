@@ -1,0 +1,160 @@
+course:
+  title: 分一分大西瓜
+  lang: zh
+  default_tts_speed: 0.85
+  persona:
+    name: 小思老师
+    style: 动作和游戏主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.85
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向4-6岁幼儿园中大班小朋友的思维课老师
+
+      - 教学策略：动作和游戏主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音夸张甜美，尾音上扬，像动画片里的角色
+
+      - 语速很慢，每句话不超过10个字
+
+      - 大量使用「哇！」「太棒了！」「击个掌！」「抱抱！」等情绪化表达
+
+      - 多用叠词和拟声词：咚咚咚、哗啦啦、喵喵喵
+
+      - 称呼学生为「宝贝」或「小可爱」'
+    goal: '- 通过游戏和动作让小朋友参与进来
+
+      - 把每个知识点变成一个可以动手做的小任务
+
+      - 让小朋友觉得自己在"玩"而不是在"学"
+
+      - 在提出互动指令后给小朋友充分的反应时间'
+    workflow: '- 1. 夸张的打招呼（比如：小可爱～我们来玩一个超好玩的游戏！）
+
+      - 2. 用身体动作引入要点（比如：来，跟老师一起拍拍手！）
+
+      - 3. 慢慢讲出核心内容
+
+      - 4. 击掌/跳舞/放烟花庆祝'
+    scope: '- 每句话不超过10个字
+
+      - 每章内容控制在2分钟内讲完
+
+      - 不要连续讲超过3句话，中间留白让孩子跟上
+
+      - 输出长度：2-3句，总共不超过50字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 小手比一比
+  skeleton:
+  - text: 伸出两只手，比比谁大？我们让它们一样大，拍一拍！
+    experience:
+      primitive: watermelon_halves
+      goal: 用小手比一比西瓜大小
+      prompt: 两个完整西瓜一样大，左边和右边是一样的哦。
+      props:
+        mode: compare
+        state: whole
+  - text: 拿两个苹果，一个切一半，另一个完整，一样多吗？对，一样多！
+    experience:
+      primitive: watermelon_halves
+      goal: 理解完整和一半一样多
+      prompt: 看看完整的西瓜和切开的两个半块，数一数是不是一样多。
+      props:
+        mode: compare
+        state: halved
+  interaction:
+    prompt: 用你的小手比一个圆，像大西瓜一样圆！
+    expect_keywords:
+    - 比圆
+    - 小手
+    - 圆
+- id: chapter_2
+  title: 画线切西瓜
+  skeleton:
+  - text: 拿一张西瓜贴纸，用蜡笔从中间画一条直直的线，变成两半！
+    experience:
+      primitive: watermelon_halves
+      goal: 画一条线把西瓜分成两半
+      prompt: 点一下「咔嚓切下去」按钮，看西瓜从中间分成两半！
+      props:
+        mode: cut
+        state: uncut
+  - text: 左边和右边一样大吗？数一数，哇，一模一样大！
+    experience:
+      primitive: watermelon_halves
+      goal: 比较切出来的两半是否一样大
+      prompt: 数一数左边有几块，右边有几块，是不是一样多。
+      props:
+        mode: cut
+        state: halves
+  interaction:
+    prompt: 请你用手指在空中画一条线，然后用手掌切下去！
+    expect_keywords:
+    - 画线
+    - 切
+- id: chapter_3
+  title: 找呀找朋友
+  skeleton:
+  - text: 老师拿出半个西瓜，你能找到另一半吗？配对成功击掌！
+    experience:
+      primitive: watermelon_halves
+      goal: 找到西瓜的另一半配对
+      prompt: 看看左边的半个西瓜，从右边三个里找到能和它拼成完整西瓜的那个。
+      props:
+        mode: match
+        state: matching
+  - text: 两个半圆拼在一起，变回大西瓜！放烟花庆祝啦！
+    experience:
+      primitive: watermelon_halves
+      goal: 把两半合起来变回完整的西瓜
+      prompt: 两个半块拼在一起，变回完整的大西瓜啦！放烟花庆祝！
+      props:
+        mode: match
+        state: complete
+  quiz:
+    question: 伸出小手，我们一起分西瓜！谁分到了最大的一块？🍉✋
+    options:
+    - key: A
+      text: 把西瓜切成两半，给好朋友一半 🍉✂️👫
+      correct: true
+    - key: B
+      text: 把西瓜整个自己吃掉 😋🍉
+      correct: false
+    - key: C
+      text: 把西瓜扔到天上 🚀🍉
+      correct: false
+    explanation_correct: 哇！你真是分享小能手！和好朋友一起吃西瓜更甜哦！🎉
+    explanation_wrong: 再想想哦，好朋友要一起吃才开心，西瓜扔到天上会摔坏的🥺
+  interaction:
+    prompt: 请找到你的好朋友，然后两个人一起用手臂围成一个大圆圈，再一起说‘咔嚓’切一下！
+    expect_keywords:
+    - 围圆圈
+    - 切

@@ -1,0 +1,341 @@
+course:
+  title: 魔法药水失踪案：侦探小分队出发！
+  lang: zh
+  default_tts_speed: 0.88
+  persona:
+    name: 小思老师
+    style: 故事与线索主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.88
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向7-8岁小学低年级小朋友的思维课老师
+
+      - 教学策略：故事与线索主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音温暖有力，像会讲故事的姐姐/哥哥
+
+      - 语速适中，每句话不超过15个字
+
+      - 多用角色化和情景化表达：「小侦探们」「队员们」「我们接到一个新任务！」
+
+      - 做错时的鼓励话术：「差一点就猜对了，我们看看另一个线索？」
+
+      - 称呼学生为「小侦探」或「小队员」'
+    goal: '- 把讲课变成一次探险或破案任务
+
+      - 让小朋友在故事中自然地学到知识点
+
+      - 做错时给予成长型思维的鼓励，保护自尊心
+
+      - 在提出思考问题后给小朋友留思考的时间'
+    workflow: '- 1. 用故事情境开场（比如：小侦探们，今天接到一个新案子！）
+
+      - 2. 在故事推进中自然引出要点
+
+      - 3. 提出一个需要"破案"的思考问题
+
+      - 4. 不管答案如何都先肯定，然后引导思考'
+    scope: '- 每句话不超过15个字
+
+      - 每个要点展开成3-4句
+
+      - 不要输出任何括号注释或舞台指导
+
+      - 输出长度：3-4句，总共不超过80字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 谁说了什么？
+  skeleton:
+  - text: 小朋友们，今天我们来当小侦探！魔法药水不见了，快跟我去现场看看。
+    experience:
+      primitive: logic_grid
+      goal: 引入案情，认识三位嫌疑人
+      title: 案发现场
+      prompt: 点击线索按钮，看看三位嫌疑人分别说了什么。
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+  - text: 三个嫌疑人：小猫咪说"我一直在家睡觉"，小兔子说"我去采胡萝卜了"，小狐狸说"我在河边看风景"。
+    experience:
+      primitive: logic_grid
+      goal: 记住每个嫌疑人的陈述
+      title: 嫌疑人陈述
+      prompt: 挨个点击线索，记住每句话。
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+  - text: 记住每句话，好像有人没说实话哦。来，一起复述一遍，看谁记得最清楚。
+    experience:
+      primitive: logic_grid
+      goal: 复述并思考谁在说谎
+      title: 记忆挑战
+      prompt: 你觉得谁的话最可疑？在表格里点一点试试看。
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+  interaction:
+    prompt: 如果你是侦探，你会从哪个人说的话里找出线索？
+    expect_keywords:
+    - 可疑的话
+    - 矛盾
+    - 细节
+- id: chapter_2
+  title: 线索表格大揭秘
+  skeleton:
+  - text: 拿出一张神奇表格，把三句话填进去。小猫咪说没出门，小兔子说出去了，小狐狸也出去了。
+    experience:
+      primitive: logic_grid
+      goal: 在表格中填入嫌疑人的陈述
+      title: 填写线索表
+      prompt: 在表格里点"在家"和"出门"，把每个人的说法填上去。
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+  - text: 咦？小猫咪说在家，但有人看见小猫咪在花园里？这是个新线索！
+    experience:
+      primitive: logic_grid
+      goal: 发现证人线索与陈述的矛盾
+      title: 新线索出现
+      prompt: 点击线索2看看，哪里和第一句对不上？
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+  - text: 表格告诉我们，有人的话对不上。仔细看看，哪一句和线索矛盾了？
+    experience:
+      primitive: logic_grid
+      goal: 找出矛盾点
+      title: 找到矛盾
+      prompt: 在"可疑"列里，你觉得谁最可疑？点一下试试。
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+  quiz:
+    question: 小侦探，线索表格里小猫说"一直在家"，但有人看到小猫在花园。这说明什么？
+    options:
+    - key: A
+      text: 小猫说了真话
+      correct: false
+    - key: B
+      text: 小猫的话和线索矛盾，可能说了谎
+      correct: true
+    - key: C
+      text: 花园里的小猫是假的
+      correct: false
+    explanation_correct: 太棒啦！你说得对，小猫说在家却出现在花园，一句话和一个线索对不上，这就是矛盾。找到矛盾就是破案的关键一步！
+    explanation_wrong: 别灰心，再想想哦。小猫说自己在家，可有人看见它在花园。同一件事有两个不同的说法，肯定有一个不对。线索告诉我们小猫出去了，所以小猫的话很可能是假的。再想一想，你一定能找到答案！
+- id: chapter_3
+  title: 真相只有一个！
+  skeleton:
+  - text: 对上了！小猫咪说自己在家，可花园里有它的脚印，所以它在说谎。
+    experience:
+      primitive: logic_grid
+      goal: 综合所有线索推理真相
+      title: 真相推理
+      prompt: 对照表格里的每一格，看看谁在说谎。
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+        answerGrid:
+        - - "no"
+          - "yes"
+          - "yes"
+        - - "yes"
+          - "no"
+          - "no"
+        - - "empty"
+          - "empty"
+          - "no"
+  - text: 原来小猫咪太喜欢魔法药水，忍不住偷喝了一口。它现在知道错了，愿意道歉。
+    experience:
+      primitive: logic_grid
+      goal: 公布案件结果
+      title: 破案了
+      prompt: 点击"查看答案"看看完整的真相表格。
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+        answerGrid:
+        - - "no"
+          - "yes"
+          - "yes"
+        - - "yes"
+          - "no"
+          - "no"
+        - - "empty"
+          - "empty"
+          - "no"
+  - text: 我们成功破案啦！每个小侦探都值得一枚勋章！来，一起庆祝吧。
+    experience:
+      primitive: logic_grid
+      goal: 庆祝破案，巩固推理方法
+      title: 庆祝结案
+      prompt: 回顾一下：用表格对比口供和线索，找到矛盾，就是推理的关键！
+      props:
+        mode: truth_table
+        cornerLabel: 嫌疑人
+        rows:
+        - 小猫
+        - 小兔
+        - 小狐
+        cols:
+        - 在家
+        - 出门
+        - 可疑
+        clues:
+        - 小猫说一直在家
+        - 有人看见小猫在花园
+        - 小兔说去采胡萝卜了
+        answerGrid:
+        - - "no"
+          - "yes"
+          - "yes"
+        - - "yes"
+          - "no"
+          - "no"
+        - - "empty"
+          - "empty"
+          - "no"
+  quiz:
+    question: 小侦探，根据线索表格，谁的话和线索矛盾，最可能是偷药水的人？
+    options:
+    - key: A
+      text: 小猫，因为它说在家却被看到在花园
+      correct: true
+    - key: B
+      text: 小兔，因为它说去采胡萝卜了
+      correct: false
+    - key: C
+      text: 小狐，因为它说在河边看风景
+      correct: false
+    explanation_correct: 没错！你真是火眼金睛！小猫说在家，但有人看到它在花园，说的话和线索对不上，这就是矛盾。你成功破了魔法药水失踪案！
+    explanation_wrong: 哎呀，再仔细看看表格？小兔去采胡萝卜、小狐去看风景，目前没有线索和它们的话矛盾。但小猫说在家却出现在花园，话和线索对不上。没关系，侦探也要多练习，你下次一定能找对！
+  interaction:
+    prompt: 如果你是侦探，你会先检查魔法药水瓶子还是地上的脚印？
+    expect_keywords:
+    - 瓶子
+    - 脚印
+    - 线索

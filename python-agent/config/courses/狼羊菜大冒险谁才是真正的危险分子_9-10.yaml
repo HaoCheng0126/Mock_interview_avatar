@@ -1,0 +1,321 @@
+course:
+  title: 狼羊菜大冒险：谁才是真正的危险分子？
+  lang: zh
+  default_tts_speed: 0.92
+  persona:
+    name: 小思老师
+    style: 策略与深度互动
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.92
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向9-10岁小学中高年级小朋友的思维课老师
+
+      - 教学策略：策略与深度互动
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音清晰有力，语速可以适当加快
+
+      - 每句话不超过20个字，但可以用更复杂的句式和逻辑词
+
+      - 用"挑战者"语气：敢不敢试试？看看你能不能比老师先想到？
+
+      - 称赞话术强调聪明感：「这个思路很厉害！」「你是怎么想到的？」
+
+      - 称呼学生为「小挑战者」或「小天才」'
+    goal: '- 挑战孩子的思维能力，让他们觉得"我变聪明了"
+
+      - 通过追问和PK激发思考深度
+
+      - 鼓励孩子用语言表达自己的思考过程
+
+      - 不满足于正确答案，追问"为什么"'
+    workflow: '- 1. 抛出一个有趣的挑战或谜题
+
+      - 2. 引导孩子推理和发现
+
+      - 3. 追问「你怎么想的？」让孩子表达思维过程
+
+      - 4. 总结+升级：「下一关更难，敢不敢来？」'
+    scope: '- 每句话不超过20个字
+
+      - 每个要点展开成4-5句
+
+      - 可以使用简单的逻辑连接词（因为/所以/但是）
+
+      - 输出长度：4-5句，总共不超过120字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 第一章：危机四伏的河岸
+  skeleton:
+  - experience:
+      primitive: state_machine
+      goal: 理解狼、羊、菜之间的危险关系，找出所有安全状态
+      prompt: 选一个物品放到船上，试试能不能安全过河。注意看红色的警告！
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 农夫要带狼、羊、菜过河，可船太小，一次只能带一样。如果留下狼和羊，狼会吃羊；留下羊和菜，羊会吃菜。你能帮农夫想办法吗？
+  - experience:
+      primitive: state_machine
+      goal: 探索所有可能的状态组合，区分安全和危险状态
+      prompt: 把所有物品都放在左岸，试着不带东西过河，看看会发生什么？
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 这其实是一个状态机问题！每个物体都有‘在左岸’和‘在右岸’两种状态。你能否列出所有可能的状态，看看哪些是‘安全’的？
+  - experience:
+      primitive: state_machine
+      goal: 在实战中找出所有安全状态并成功过河
+      prompt: 试试不同的过河顺序，看看最少需要几步才能把所有物品安全送到右岸！
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 挑战：和AI同学比赛，谁能先找出所有安全状态？试试看！
+  quiz:
+    question: 农夫要离开河岸一会儿，把狼、羊和菜都留在岸上。你觉得会发生什么？
+    options:
+    - key: A
+      text: 狼会吃掉羊
+      correct: false
+    - key: B
+      text: 羊会吃掉菜
+      correct: false
+    - key: C
+      text: 狼吃羊或羊吃菜，结果不确定
+      correct: true
+    - key: D
+      text: 它们会和平相处，因为都是好朋友
+      correct: false
+    explanation_correct: 你太聪明了！狼和羊、羊和菜都是天生的敌人，同时放在一起肯定要出乱子。所以真正的危险分子不止一个哦！
+    explanation_wrong: 你是怎么想的？是不是觉得狼最凶？但别忘了，羊也很想吃菜呢。再想想，如果把它们都留在岸上，可能会发生什么？
+  interaction:
+    prompt: 狼、羊和菜，谁才是真正的危险分子？你是怎么想的？
+    expect_keywords:
+    - 狼
+    - 羊
+    - 菜
+    - 危险
+    - 互相
+- id: chapter_2
+  title: 第二章：状态转移大作战
+  skeleton:
+  - experience:
+      primitive: state_machine
+      goal: 理解每次过河都是一个状态转移，找到从起点到终点的路径
+      prompt: 先带羊过河试试看！观察每一步之后左岸和右岸分别有什么。
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 现在把安全状态画成圆圈，用箭头表示农夫的一次过河（带或不带物品）。你能画出从初始状态到目标状态的路径吗？
+  - experience:
+      primitive: state_machine
+      goal: 理解状态转移规则——每次移动后两岸都必须安全
+      prompt: 试试先带狼过河，看看会怎么样？再试试先带菜过河？
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 注意！每次移动都要保证新状态是安全的。你是不是发现有些路走不通？这就是状态机的‘转移规则’。
+  - experience:
+      primitive: state_machine
+      goal: 找出最短的过河方案——最少步数
+      prompt: 目标是最少步数！想想看，每次过河带哪个物品最合理？试试你的方案！
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: PK模式：你和AI各选一条路径，谁先找到最短的过河方案？小心陷阱！
+  interaction:
+    prompt: 如果必须留下两个在一起，你会留下谁和谁？为什么？
+    expect_keywords:
+    - 狼和羊
+    - 羊和菜
+    - 危险
+    - 选择
+- id: chapter_3
+  title: 第三章：危机升级！新的危险品
+  skeleton:
+  - experience:
+      primitive: state_machine
+      goal: 增加新物品后重新分析危险关系，设计新的状态机
+      prompt: 现在多了鸡（吃菜）和狗（追狼），试试看怎么安全过河？
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 鸡
+          emoji: 🐔
+          eats: 菜
+        - name: 狗
+          emoji: 🐕
+          eats: 狼
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 如果现在多了一只鸡（会吃菜）或者一条狗（会追狼）呢？你能给这个新问题设计状态机和转移图吗？
+  - experience:
+      primitive: state_machine
+      goal: 站在不同角度思考危险的责任归属
+      prompt: 先选择过河方案，然后想一想：如果农夫事先知道危险，他能做什么来避免？
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 菜
+          emoji: 🥬
+          eats: null
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 批判思考：在故事中，谁该为危险负责？是狼的本性、羊的贪婪，还是农夫考虑不周？如果是你，会怎么做？
+  - experience:
+      primitive: state_machine
+      goal: 创造自己的过河谜题并验证是否可解
+      prompt: 给大家出一道新谜题！设计几样会互相影响的东西，看看谁能最快解出来？
+      props:
+        items:
+        - name: 狼
+          emoji: 🐺
+          eats: 羊
+        - name: 羊
+          emoji: 🐑
+          eats: 菜
+        - name: 狗
+          emoji: 🐕
+          eats: 狼
+        - name: 猫
+          emoji: 🐱
+          eats: 鸡
+        - name: 鸡
+          emoji: 🐔
+          eats: 菜
+        - name: 农夫
+          emoji: 👨‍🌾
+          eats: null
+    text: 终极挑战：设计一个至少有5种物品的过河问题，并让你的同学或AI来解！看谁的设计更‘狡猾’。
+  quiz:
+    question: 在狼、羊、菜的三样东西中，农夫发现了一个秘密：有一样东西，它表面上看很安全，其实它才是导致所有冲突的根源。请问是哪一样？
+    options:
+    - key: A
+      text: 狼（看起来很凶猛，但它只吃羊，不会吃菜）
+      correct: false
+    - key: B
+      text: 羊（看起来很温顺，但它吃菜，还会引来狼）
+      correct: true
+    - key: C
+      text: 菜（一动不动，从不惹事，非常安全）
+      correct: false
+    - key: D
+      text: 所有东西都一样危险，没有区别
+      correct: false
+    explanation_correct: 你太聪明了！羊看似温顺无害，但正是因为它既会吃菜，又会引来狼，才导致了所有的冲突和危机。羊才是真正的危险分子！
+    explanation_wrong: 你是怎么想的呢？再想想看：狼虽然凶猛，但它只吃羊；菜虽然不动，但会被羊吃。谁才是那个既惹狼又惹菜的角色呢？
+  interaction:
+    prompt: 发现一个写着“危险”的箱子，但可能是过河工具，你开不开？
+    expect_keywords:
+    - 观察
+    - 判断
+    - 风险
+    - 安全

@@ -1,0 +1,184 @@
+course:
+  title: 小动物拖水果排队游戏
+  lang: zh
+  default_tts_speed: 0.85
+  persona:
+    name: 小思老师
+    style: 动作和游戏主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.85
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向4-6岁幼儿园中大班小朋友的思维课老师
+
+      - 教学策略：动作和游戏主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音夸张甜美，尾音上扬，像动画片里的角色
+
+      - 语速很慢，每句话不超过10个字
+
+      - 大量使用「哇！」「太棒了！」「击个掌！」「抱抱！」等情绪化表达
+
+      - 多用叠词和拟声词：咚咚咚、哗啦啦、喵喵喵
+
+      - 称呼学生为「宝贝」或「小可爱」'
+    goal: '- 通过游戏和动作让小朋友参与进来
+
+      - 把每个知识点变成一个可以动手做的小任务
+
+      - 让小朋友觉得自己在"玩"而不是在"学"
+
+      - 在提出互动指令后给小朋友充分的反应时间'
+    workflow: '- 1. 夸张的打招呼（比如：小可爱～我们来玩一个超好玩的游戏！）
+
+      - 2. 用身体动作引入要点（比如：来，跟老师一起拍拍手！）
+
+      - 3. 慢慢讲出核心内容
+
+      - 4. 击掌/跳舞/放烟花庆祝'
+    scope: '- 每句话不超过10个字
+
+      - 每章内容控制在2分钟内讲完
+
+      - 不要连续讲超过3句话，中间留白让孩子跟上
+
+      - 输出长度：2-3句，总共不超过50字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 认识水果和小动物
+  skeleton:
+  - experience:
+      primitive: drag_to_animal
+      goal: 把正确的水果拖给小动物
+      prompt: 找到小动物爱吃的水果，拖过去喂它吧！
+      props:
+        animal: 🐻 小熊
+        fruits:
+        - 🍎 苹果
+        - 🍌 香蕉
+        - 🍊 橘子
+        correct: 0
+    text: 小熊爱吃苹果，我们学小熊'嗷呜'叫，把苹果拖过去！
+  - experience:
+      primitive: drag_to_animal
+      goal: 把正确的水果拖给小动物
+      prompt: 找到小动物爱吃的水果，拖过去喂它吧！
+      props:
+        animal: 🐒 猴子
+        fruits:
+        - 🍎 苹果
+        - 🍌 香蕉
+        - 🍊 橘子
+        correct: 1
+    text: 猴子爱吃香蕉，我们学猴子'吱吱'叫，把香蕉拖过去！
+  interaction:
+    prompt: 谁能学一学小乌龟拖苹果？
+    expect_keywords:
+    - 小乌龟
+    - 拖
+- id: chapter_2
+  title: 拖水果给朋友
+  skeleton:
+  - experience:
+      primitive: drag_to_animal
+      goal: 把正确的水果拖给小动物
+      prompt: 找到小动物爱吃的水果，拖过去喂它吧！
+      props:
+        animal: 🐻 小熊
+        fruits:
+        - 🍌 香蕉
+        - 🍎 苹果
+        - 🍊 橘子
+        correct: 1
+    text: 看到苹果就拖给小熊，拖对了小熊会跳舞哦！
+  - experience:
+      primitive: drag_to_animal
+      goal: 把正确的水果拖给小动物
+      prompt: 找到小动物爱吃的水果，拖过去喂它吧！
+      props:
+        animal: 🐒 猴子
+        fruits:
+        - 🍎 苹果
+        - 🍌 香蕉
+        - 🍊 橘子
+        correct: 1
+    text: 看到香蕉就拖给猴子，拖对了猴子会翻跟斗！
+  quiz:
+    question: 大家快来帮小猴子！请找出黄色的水果，然后一起做出拖的动作吧！哪个水果是黄色的？
+    options:
+    - key: A
+      text: 🍌香蕉
+      correct: true
+    - key: B
+      text: 🍎苹果
+      correct: false
+    - key: C
+      text: 🍉西瓜
+      correct: false
+    explanation_correct: 太棒了！香蕉是黄色的，我们一起拖香蕉送给朋友吧！
+    explanation_wrong: 再想想哦，香蕉才是黄色的，苹果是红色的，西瓜是绿色的。
+  interaction:
+    prompt: 请拖动一个红色水果给旁边的好朋友！
+    expect_keywords:
+    - 拖
+    - 苹果
+    - 朋友
+- id: chapter_3
+  title: 小动物排队
+  skeleton:
+  - experience:
+      primitive: drag_to_animal
+      goal: 把正确的水果拖给小动物
+      prompt: 找到小动物爱吃的水果，拖过去喂它吧！
+      props:
+        animal: 🐻 小熊
+        fruits:
+        - 🍊 橘子
+        - 🍎 苹果
+        - 🍌 香蕉
+        correct: 1
+    text: 给小熊和猴子排队，先拖苹果给小熊，再拖香蕉给猴子。
+  - experience:
+      primitive: drag_to_animal
+      goal: 把正确的水果拖给小动物
+      prompt: 找到小动物爱吃的水果，拖过去喂它吧！
+      props:
+        animal: 🐻 小熊
+        fruits:
+        - 🍎 苹果
+        - 🍌 香蕉
+        - 🍊 橘子
+        correct: 0
+    text: 排好队啦！击掌庆祝，放烟花！
+  interaction:
+    prompt: 小朋友们，跟着老师一起学小动物拖水果，一步一步排好队！
+    expect_keywords:
+    - 拖水果
+    - 排队

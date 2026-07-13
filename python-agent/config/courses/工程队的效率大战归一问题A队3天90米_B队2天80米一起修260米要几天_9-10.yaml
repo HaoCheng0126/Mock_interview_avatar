@@ -1,0 +1,266 @@
+course:
+  title: 工程队的效率大战｜归一问题：A队3天90米 B队2天80米，一起修260米要几天
+  lang: zh
+  default_tts_speed: 0.92
+  persona:
+    name: 小思老师
+    style: 策略与深度互动
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.92
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向9-10岁小学中高年级小朋友的思维课老师
+
+      - 教学策略：策略与深度互动
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音清晰有力，语速可以适当加快
+
+      - 每句话不超过20个字，但可以用更复杂的句式和逻辑词
+
+      - 用"挑战者"语气：敢不敢试试？看看你能不能比老师先想到？
+
+      - 称赞话术强调聪明感：「这个思路很厉害！」「你是怎么想到的？」
+
+      - 称呼学生为「小挑战者」或「小天才」'
+    goal: '- 挑战孩子的思维能力，让他们觉得"我变聪明了"
+
+      - 通过追问和PK激发思考深度
+
+      - 鼓励孩子用语言表达自己的思考过程
+
+      - 不满足于正确答案，追问"为什么"'
+    workflow: '- 1. 抛出一个有趣的挑战或谜题
+
+      - 2. 引导孩子推理和发现
+
+      - 3. 追问「你怎么想的？」让孩子表达思维过程
+
+      - 4. 总结+升级：「下一关更难，敢不敢来？」'
+    scope: '- 每句话不超过20个字
+
+      - 每个要点展开成4-5句
+
+      - 可以使用简单的逻辑连接词（因为/所以/但是）
+
+      - 输出长度：4-5句，总共不超过120字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 归一入门——谁是效率之王？
+  skeleton:
+  - text: 先算A队每天修多少米：90÷3=30米/天。
+    experience:
+      primitive: sort_order
+      goal: 理解归一法：先算出每人每天的工作量
+      prompt: 把工程步骤排好：先算每天工作量，再比谁更快！
+      props:
+        mode: sort
+        items:
+        - label: 📐 A队90÷3=30米/天
+          value: 1
+          color: '#8bb9e7'
+        - label: 📏 B队80÷2=40米/天
+          value: 2
+          color: '#58a875'
+        - label: ⚡ B队更快！每天多10米
+          value: 3
+          color: '#f5c84b'
+  - text: 再算B队每天修多少米：80÷2=40米/天。
+    experience:
+      primitive: bar_chart
+      goal: 对比两队每日工作效率
+      prompt: A队30米/天，B队40米/天，用柱子比一比谁更高！
+      props:
+        bars:
+        - label: 📐 A队
+          value: 30
+          color: '#8bb9e7'
+        - label: 📏 B队
+          value: 40
+          color: '#58a875'
+        highlight: max
+  - text: 比较两队效率：B队每天多修10米，但别急，后面还有更难的挑战！
+    experience:
+      primitive: bar_chart
+      goal: 直观感受效率差异：B队每天多10米
+      prompt: B队每天比A队多修10米！柱子高度差就是效率差。
+      props:
+        bars:
+        - label: 📐 A队
+          value: 30
+          color: '#8bb9e7'
+        - label: 📏 B队
+          value: 40
+          color: '#58a875'
+        - label: 📊 差距
+          value: 10
+          color: '#f5c84b'
+        highlight: max
+  interaction:
+    prompt: A队3天90米，B队2天80米，谁是效率之王？说说你的理由。
+    expect_keywords:
+    - 比较
+    - 效率
+    - 每天修多少米
+    - 速度
+- id: chapter_2
+  title: 合作挑战——两队联手！
+  skeleton:
+  - text: 两队合作一天能修30+40=70米。
+    experience:
+      primitive: bar_chart
+      goal: 理解合作效率 = 两队效率相加
+      prompt: 两队合作一天修30+40=70米！看看合作的力量有多大！
+      props:
+        bars:
+        - label: 📐 A队单独
+          value: 30
+          color: '#8bb9e7'
+        - label: 📏 B队单独
+          value: 40
+          color: '#58a875'
+        - label: 🤝 合作一天
+          value: 70
+          color: '#f5c84b'
+        highlight: max
+  - text: 总长260米，需要260÷70≈3.71天，实际要4天（因为最后一天干不完也得算一天）。
+    experience:
+      primitive: sort_order
+      goal: 理解工程计算步骤：总量÷合作效率=天数
+      prompt: 排好计算步骤：260÷70≈3.71天，向上取整=4天！
+      props:
+        mode: sort
+        items:
+        - label: 📐 总长260米
+          value: 1
+          color: '#d95b59'
+        - label: 🤝 每天合作70米
+          value: 2
+          color: '#8bb9e7'
+        - label: 🔢 260÷70≈3.71
+          value: 3
+          color: '#f5c84b'
+        - label: ✅ 需要4天完成
+          value: 4
+          color: '#58a875'
+  - text: 思考：为什么不是正好整数？如果你是工程队长，怎么安排更高效？
+    experience:
+      primitive: time_scheduler
+      goal: 用时间表安排工程：理解为什么需要4天
+      prompt: 排一下工程时间表：前两天干完大部分，最后一天收尾。
+      props:
+        tasks:
+        - label: 第1天 70米
+          start: 0
+          duration: 1
+        - label: 第2天 70米
+          start: 1
+          duration: 1
+        - label: 第3天 70米
+          start: 2
+          duration: 1
+        - label: 第4天 50米收尾
+          start: 3
+          duration: 1
+  quiz:
+    question: A队3天修90米，B队2天修80米，两队一起修260米的路，需要几天？
+    options:
+    - key: A
+      text: 2天
+      correct: false
+    - key: B
+      text: 4天
+      correct: false
+    - key: C
+      text: 7.4天
+      correct: false
+    - key: D
+      text: 3又5/7天
+      correct: true
+    explanation_correct: 你太聪明了！正确算法：先算两队各自的工作效率——A队每天90÷3=30米，B队每天80÷2=40米，合作每天30+40=70米，所以260÷70=26/7=3又5/7天。
+    explanation_wrong: 你是怎么想的？注意：不能直接加时间或总米数，要先算两队每天各修多少米，再算合作效率。试试重新计算吧！
+- id: chapter_3
+  title: 效率升级——如果B队中途休息1天？
+  skeleton:
+  - text: 假设B队休息那天只有A队干活：一天修30米，剩下230米两队合作。
+    experience:
+      primitive: bar_chart
+      goal: 对比不同方案的工作量分配
+      prompt: B队休息那天只有A队干30米，剩下230米合作！看柱子怎么变。
+      props:
+        bars:
+        - label: 📐 A队单干1天
+          value: 30
+          color: '#8bb9e7'
+        - label: 🤝 之后合作每天
+          value: 70
+          color: '#f5c84b'
+        - label: 📊 剩余230米
+          value: 230
+          color: '#d95b59'
+        highlight: max
+  - text: 合作时间：230÷70≈3.29天，总共要1+4=5天（注意余数）。
+    experience:
+      primitive: sort_order
+      goal: 排列工程调整后的计算步骤
+      prompt: B队休息1天，重新算：230÷70≈3.29→1+4=5天。排好步骤！
+      props:
+        mode: sort
+        items:
+        - label: 📐 第1天A队30米
+          value: 1
+          color: '#8bb9e7'
+        - label: 🤝 第2-4天合作3天
+          value: 2
+          color: '#f5c84b'
+        - label: 📏 第5天收尾
+          value: 3
+          color: '#58a875'
+        - label: ✅ 总共需要5天
+          value: 4
+          color: '#d95b59'
+  - text: PK挑战：你和AI同学谁先算出如果A队先干2天再合作要几天？
+    experience:
+      primitive: number_game
+      goal: 挑战：灵活运用归一法，和AI比赛解题
+      prompt: 现在轮到你用归一法解题了！A队先干2天再合作，要几天？和AI比赛谁先算出来！
+      props:
+        target: 30
+        step:
+        - 1
+        - 3
+        highlightMultiples: 5
+        mode: game
+  interaction:
+    prompt: 如果B队中途休息1天，总时间会怎么变？说说你的想法。
+    expect_keywords:
+    - 效率
+    - 天数增加
+    - 重新计算
+    - 休息影响

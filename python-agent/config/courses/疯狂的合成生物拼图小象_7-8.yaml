@@ -1,0 +1,196 @@
+course:
+  title: 疯狂的合成生物：拼图小象
+  lang: zh
+  default_tts_speed: 0.88
+  persona:
+    name: 小思老师
+    style: 故事与线索主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.88
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向7-8岁小学低年级小朋友的思维课老师
+
+      - 教学策略：故事与线索主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音温暖有力，像会讲故事的姐姐/哥哥
+
+      - 语速适中，每句话不超过15个字
+
+      - 多用角色化和情景化表达：「小侦探们」「队员们」「我们接到一个新任务！」
+
+      - 做错时的鼓励话术：「差一点就猜对了，我们看看另一个线索？」
+
+      - 称呼学生为「小侦探」或「小队员」'
+    goal: '- 把讲课变成一次探险或破案任务
+
+      - 让小朋友在故事中自然地学到知识点
+
+      - 做错时给予成长型思维的鼓励，保护自尊心
+
+      - 在提出思考问题后给小朋友留思考的时间'
+    workflow: '- 1. 用故事情境开场（比如：小侦探们，今天接到一个新案子！）
+
+      - 2. 在故事推进中自然引出要点
+
+      - 3. 提出一个需要"破案"的思考问题
+
+      - 4. 不管答案如何都先肯定，然后引导思考'
+    scope: '- 每句话不超过15个字
+
+      - 每个要点展开成3-4句
+
+      - 不要输出任何括号注释或舞台指导
+
+      - 输出长度：3-4句，总共不超过80字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 神秘盒子里的乐高积木
+  skeleton:
+  - text: 小AI打开基因工程实验舱，发现两块会发光的基因芯片。
+    experience:
+      primitive: bio_builder_lab
+      goal: 认识A、B两个基因芯片模块
+      prompt: 扫描实验台上的A、B芯片，看看每块芯片负责什么。
+      props:
+        mode: module
+        status: 基因芯片待扫描
+        chips:
+        - code: A
+          label: 荧光模块
+          active: true
+        - code: B
+          label: 治疗模块
+          active: false
+  - text: A芯片负责荧光，B芯片负责治疗，单独使用只会完成一件事。
+    experience:
+      primitive: bio_builder_lab
+      goal: 对比单个模块和组合模块
+      prompt: 把两块芯片放进实验台，观察AB组合会出现什么新能力。
+      props:
+        mode: combine
+        formula: A芯片 + B芯片 → AB方案
+        status: 等待组合测试
+        chips:
+        - code: A
+          label: 荧光
+        - code: B
+          label: 治疗
+  - text: 老师变身实验室侦探，带大家看芯片怎样像积木一样拼接。
+    experience:
+      primitive: bio_builder_lab
+      goal: 发现基因模块可以组合成方案
+      prompt: 启动合成AB，看实验舱怎样把两个功能连在一起。
+      props:
+        mode: combine
+        formula: 荧光模块 + 治疗模块 → 小象救援方案
+        status: AB方案正在生成
+  interaction:
+    prompt: 如果你是小小探险家，发现神秘盒子里有乐高积木，你会先拼出什么？
+    expect_keywords:
+    - 小象
+    - 合成生物
+- id: chapter_2
+  title: 积木的秘密功能
+  skeleton:
+  - text: 侦探小队用荧光显微镜观察，发现A芯片能点亮小象细胞。
+    experience:
+      primitive: bio_builder_lab
+      goal: 观察荧光模块的科技效果
+      prompt: 扫描A芯片，看看实验舱里出现的绿色荧光信号。
+      props:
+        mode: module
+        status: 荧光信号已捕捉
+        chips:
+        - code: A
+          label: 荧光模块
+          active: true
+        - code: B
+          label: 治疗模块
+          active: false
+  - text: B芯片像一支精准药物，和A芯片组合后才能边定位边治疗。
+    experience:
+      primitive: bio_builder_lab
+      goal: 理解模块组合产生完整功能
+      prompt: 插入A和B，启动AB合成方案。
+      props:
+        mode: combine
+        formula: 定位荧光 + 精准治疗 → 完整救援
+        status: 治疗程序待启动
+        chips:
+        - code: A
+          label: 定位
+        - code: B
+          label: 治疗
+  - text: 拼错了没关系！每次错误都会发现新线索，比如“这个组合让小象变蓝了！”
+  quiz:
+    question: 小侦探小象在探索积木的秘密功能，它发现一块红色长方形积木，轻轻一转，竟然变成了一只小鸟！这块积木的秘密功能是什么？
+    options:
+    - key: A
+      text: 它可以单独变成任何形状
+      correct: false
+    - key: B
+      text: 它只能当长方形用
+      correct: false
+    - key: C
+      text: 它可以和其他积木组合成新生物
+      correct: true
+    explanation_correct: 太棒了！小象的秘密就是：每块积木都有隐藏的拼合功能，和别的积木组合就能创造出全新的生物，就像魔法一样！
+    explanation_wrong: 别灰心！积木的神奇在于它们可以互相配合。试试看把这块积木和另一块拼在一起，也许会有惊喜哦！再想想看吧！
+- id: chapter_3
+  title: 拼出健康的小象
+  skeleton:
+  - text: 按照正确顺序把A和B拼在一起，小象的病好了，还发出漂亮的荧光！
+    experience:
+      primitive: bio_builder_lab
+      goal: 把正确基因组合拖给小象治好病
+      prompt: 启动治疗舱，把AB方案送进小象扫描舱。
+      props:
+        mode: rescue
+        status: 小象等待治疗
+        result: AB救援方案
+  - text: 这就是生物界的拼图游戏——科学家像搭积木一样设计生物。
+    experience:
+      primitive: bio_builder_lab
+      goal: 庆祝小象康复还获得荧光能力
+      prompt: 点亮荧光，看看小象康复后的新状态。
+      props:
+        mode: rescue
+        status: 康复扫描完成
+        result: 康复+荧光
+  - text: 你学会了像程序员一样用模块化思维解决问题，真棒！
+    experience:
+      primitive: bio_builder_lab
+      goal: 回顾模块化思维解决问题
+      prompt: 回顾实验流程：发现问题、选择芯片、组合测试、完成救援。
+      props:
+        mode: combine
+        formula: 问题 → 模块 → 测试 → 解决
+        status: 模块化思维已解锁

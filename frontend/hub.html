@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Avatar — 控制台</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #1a1d27;
+    --panel-2: #252836;
+    --border: #2a2d3a;
+    --text: #e1e4ed;
+    --text-dim: #8b90a0;
+    --accent: #6c8cff;
+    --accent-hover: #8ba3ff;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topbar h1 { font-size: 15px; font-weight: 600; letter-spacing: .2px; }
+  #topbar .sub { font-size: 12px; color: var(--text-dim); }
+  #topbar .spacer { flex: 1; }
+
+  #layout {
+    display: grid;
+    grid-template-columns: minmax(380px, 440px) 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    align-items: start;
+  }
+  @media (max-width: 960px) {
+    #layout { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card + .card { margin-top: 16px; }
+  .card-head {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 14px 16px 0;
+  }
+  .card-head h2 { font-size: 13px; font-weight: 600; }
+  .card-head .hint { font-size: 11px; color: var(--text-dim); }
+  .card-body { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .field label {
+    display: block; font-size: 11px; color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 8px 10px;
+    font-family: inherit;
+    transition: border-color .15s;
+  }
+  .field input.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .field textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
+  .field input:focus, .field textarea:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .field .note { font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  #save-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 16px;
+  }
+  button {
+    font-family: inherit; font-size: 12px; cursor: pointer;
+    border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text);
+    padding: 8px 14px;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    font-weight: 600; padding: 9px 20px;
+  }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+  button.danger:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+  #save-note { font-size: 11px; color: var(--text-dim); }
+
+  /* ---- agent cards ---- */
+  .agent {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color .15s;
+  }
+  .agent:hover { border-color: #3a3e50; }
+  .agent + .agent { margin-top: 12px; }
+  .agent-top { display: flex; align-items: center; gap: 10px; }
+  .agent-name { font-size: 14px; font-weight: 600; }
+  .agent-id { font-size: 11px; color: var(--text-dim); font-family: ui-monospace, Menlo, monospace; }
+  .agent-desc { font-size: 12px; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500;
+    margin-left: auto; flex-shrink: 0;
+  }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.stopped { background: #2a2d3a; color: var(--text-dim); }
+  .pill.running { background: #1a3a2a; color: var(--green); }
+  .pill.running::before { animation: pulse 1.6s ease-in-out infinite; }
+  .pill.external { background: #3d3520; color: var(--yellow); }
+  @keyframes pulse { 50% { opacity: .3; } }
+
+  .agent-actions {
+    display: flex; align-items: center; gap: 8px; margin-top: 12px;
+  }
+  .agent-actions .port {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .agent-actions .port input {
+    width: 64px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-size: 11px; padding: 5px 7px;
+    font-family: ui-monospace, Menlo, monospace;
+  }
+  .agent-actions .port input:focus { outline: none; border-color: var(--accent); }
+  .agent-actions .spacer { flex: 1; }
+  .agent-actions a {
+    font-size: 12px; color: var(--accent); text-decoration: none;
+    padding: 8px 10px;
+  }
+  .agent-actions a:hover { color: var(--accent-hover); text-decoration: underline; }
+  .agent-actions a.disabled { color: var(--text-dim); pointer-events: none; opacity: .5; }
+
+  .agent-logs {
+    display: none;
+    margin-top: 12px; padding: 10px 12px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; line-height: 1.6; color: var(--text-dim);
+    max-height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  }
+  .agent-logs.open { display: block; }
+
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 18px; font-size: 12px;
+    max-width: 70vw; white-space: pre-wrap;
+    transition: transform .25s cubic-bezier(.16,1,.3,1); z-index: 99;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.ok { border-color: #2a5a3a; }
+  #toast.err { border-color: #5a2a2a; }
+
+  .col-title {
+    font-size: 11px; font-weight: 600; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 1.2px;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>🎛 Live Avatar — 控制台</h1>
+  <span class="sub">后端配置 · Agent 管理</span>
+  <span class="spacer"></span>
+</div>
+
+<div id="layout">
+  <!-- ================= 左列：配置 ================= -->
+  <section>
+    <div class="col-title">后端配置</div>
+
+    <div class="card">
+      <div class="card-head"><h2>平台接入</h2><span class="hint">LiveAvatar 数字人平台</span></div>
+      <div class="card-body">
+        <div class="field">
+          <label for="platform-api_key">API Key</label>
+          <input id="platform-api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="lk_live_...">
+          <div class="note">已保存的密钥显示为 ••••尾号，重新输入才会覆盖，清空则删除</div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="platform-avatar_id">Avatar ID（形象）</label>
+            <input id="platform-avatar_id" class="mono" spellcheck="false" placeholder="avatar_...">
+          </div>
+          <div class="field">
+            <label for="platform-voice_id">Voice ID（音色，可选）</label>
+            <input id="platform-voice_id" class="mono" spellcheck="false" placeholder="留空用形象默认音色">
+          </div>
+        </div>
+        <div class="field">
+          <label for="platform-base_url">平台地址</label>
+          <input id="platform-base_url" class="mono" spellcheck="false">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>大模型 LLM</h2><span class="hint">文字回复生成（OpenAI 兼容）</span></div>
+      <div class="card-body">
+        <div class="field">
+          <label for="llm-api_key">API Key</label>
+          <input id="llm-api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="llm-base_url">Base URL</label>
+            <input id="llm-base_url" class="mono" spellcheck="false" placeholder="https://api.deepseek.com">
+          </div>
+          <div class="field">
+            <label for="llm-model">模型</label>
+            <input id="llm-model" class="mono" spellcheck="false" placeholder="deepseek-v4-flash">
+          </div>
+        </div>
+        <div class="field">
+          <label for="llm-system_prompt">系统提示词（可选，聊天 agent 使用）</label>
+          <textarea id="llm-system_prompt" placeholder="你是一位友善的数字人助手…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>语音识别 ASR</h2><span class="hint">DashScope Qwen 实时转写</span></div>
+      <div class="card-body">
+        <div class="field">
+          <label for="asr-dashscope_api_key">DashScope API Key</label>
+          <input id="asr-dashscope_api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
+          <div class="note">留空则自动降级为平台侧 ASR</div>
+        </div>
+        <div class="field">
+          <label for="asr-model">ASR 模型</label>
+          <input id="asr-model" class="mono" spellcheck="false" placeholder="qwen3-asr-flash-realtime">
+        </div>
+      </div>
+    </div>
+
+    <div id="save-bar">
+      <button class="primary" id="save-btn" onclick="saveConfig()">保存配置</button>
+      <span id="save-note">保存后在 agent 下次启动时生效</span>
+    </div>
+  </section>
+
+  <!-- ================= 右列：agents ================= -->
+  <section>
+    <div class="col-title">Agents</div>
+    <div id="agent-list"></div>
+  </section>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const CONFIG_FIELDS = [
+  ["platform", "api_key"], ["platform", "avatar_id"],
+  ["platform", "voice_id"], ["platform", "base_url"],
+  ["llm", "api_key"], ["llm", "base_url"], ["llm", "model"], ["llm", "system_prompt"],
+  ["asr", "dashscope_api_key"], ["asr", "model"],
+];
+const STATUS_TEXT = { running: "运行中", external: "外部运行", stopped: "未启动" };
+
+let agents = [];
+const openLogs = new Set();
+const busy = new Set();
+
+function $(id) { return document.getElementById(id); }
+
+function toast(msg, ok = true) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.className = ok ? "show ok" : "show err";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { el.className = ""; }, ok ? 2500 : 6000);
+}
+
+// ---- config ----
+
+async function loadConfig() {
+  const cfg = await (await fetch("/api/config")).json();
+  for (const [sec, field] of CONFIG_FIELDS) {
+    $(`${sec}-${field}`).value = cfg[sec]?.[field] ?? "";
+  }
+}
+
+function collectPorts() {
+  const out = {};
+  for (const a of agents) {
+    const input = document.querySelector(`input[data-port="${a.name}"]`);
+    if (input && input.value) out[a.name] = { port: Number(input.value) };
+  }
+  return out;
+}
+
+async function saveConfig() {
+  const body = { agents: collectPorts() };
+  for (const [sec, field] of CONFIG_FIELDS) {
+    (body[sec] ??= {})[field] = $(`${sec}-${field}`).value;
+  }
+  $("save-btn").disabled = true;
+  try {
+    const res = await fetch("/api/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || res.status);
+    toast("✅ 配置已保存 — 重启 agent 后生效");
+    await loadConfig();
+    await refreshAgents();
+  } catch (e) {
+    toast("保存失败：" + e.message, false);
+  } finally {
+    $("save-btn").disabled = false;
+  }
+}
+
+// ---- agents ----
+
+function agentCard(a) {
+  const canStop = a.status === "running";
+  const canStart = a.status === "stopped" && !busy.has(a.name);
+  const linkCls = a.status === "stopped" ? "disabled" : "";
+  const startLabel = busy.has(a.name) ? "启动中…" : "启动";
+  return `
+  <div class="agent" id="agent-${a.name}">
+    <div class="agent-top">
+      <span class="agent-name">${a.label}</span>
+      <span class="agent-id">${a.name}</span>
+      <span class="pill ${a.status}">${STATUS_TEXT[a.status]}${a.pid ? " · pid " + a.pid : ""}</span>
+    </div>
+    <div class="agent-desc">${a.desc}</div>
+    <div class="agent-actions">
+      <span class="port">端口 <input data-port="${a.name}" value="${a.port}" inputmode="numeric"></span>
+      <span class="spacer"></span>
+      <button ${canStart ? "" : "disabled"} onclick="startAgent('${a.name}')">${startLabel}</button>
+      <button class="danger" ${canStop ? "" : "disabled"} onclick="stopAgent('${a.name}')">停止</button>
+      <a class="${linkCls}" href="${a.url}" target="_blank" rel="noopener">打开页面 ↗</a>
+      ${a.name === "interview" ? '<a href="/interview-config">参数配置</a>' : ""}
+      <button onclick="toggleLogs('${a.name}')">日志</button>
+    </div>
+    <pre class="agent-logs ${openLogs.has(a.name) ? "open" : ""}" id="logs-${a.name}"></pre>
+  </div>`;
+}
+
+function renderAgents() {
+  const focused = document.activeElement;
+  const focusName = focused?.dataset?.port;
+  const editing = {};
+  for (const el of document.querySelectorAll("input[data-port]")) {
+    editing[el.dataset.port] = el.value;
+  }
+  $("agent-list").innerHTML = agents.map(agentCard).join("");
+  for (const [name, val] of Object.entries(editing)) {
+    const el = document.querySelector(`input[data-port="${name}"]`);
+    if (el && val !== "") el.value = val;
+  }
+  if (focusName) {
+    document.querySelector(`input[data-port="${focusName}"]`)?.focus();
+  }
+  for (const name of openLogs) loadLogs(name);
+}
+
+async function refreshAgents() {
+  try {
+    agents = await (await fetch("/api/agents")).json();
+    renderAgents();
+  } catch { /* hub restarting; next poll retries */ }
+}
+
+async function startAgent(name) {
+  busy.add(name);
+  renderAgents();
+  try {
+    const res = await fetch("/api/agents/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || res.status);
+    toast(`✅ 已启动 — ${data.url}`);
+  } catch (e) {
+    toast("启动失败：" + e.message, false);
+    openLogs.add(name);
+  } finally {
+    busy.delete(name);
+    await refreshAgents();
+  }
+}
+
+async function stopAgent(name) {
+  try {
+    const res = await fetch("/api/agents/stop", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || res.status);
+    toast("已停止 " + name);
+  } catch (e) {
+    toast("停止失败：" + e.message, false);
+  }
+  await refreshAgents();
+}
+
+function toggleLogs(name) {
+  if (openLogs.has(name)) openLogs.delete(name);
+  else { openLogs.add(name); loadLogs(name); }
+  $(`logs-${name}`).classList.toggle("open");
+}
+
+async function loadLogs(name) {
+  try {
+    const data = await (await fetch(`/api/agents/logs?name=${name}`)).json();
+    const el = $(`logs-${name}`);
+    if (!el) return;
+    el.textContent = data.lines?.length ? data.lines.join("\n") : "（暂无输出）";
+    el.scrollTop = el.scrollHeight;
+  } catch { /* ignore */ }
+}
+
+loadConfig();
+refreshAgents();
+setInterval(refreshAgents, 3000);
+</script>
+</body>
+</html>

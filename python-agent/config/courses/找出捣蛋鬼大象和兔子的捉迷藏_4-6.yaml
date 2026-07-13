@@ -1,0 +1,208 @@
+course:
+  title: 找出捣蛋鬼：大象和兔子的捉迷藏
+  lang: zh
+  default_tts_speed: 0.85
+  persona:
+    name: 小思老师
+    style: 动作和游戏主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.85
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向4-6岁幼儿园中大班小朋友的思维课老师
+
+      - 教学策略：动作和游戏主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音夸张甜美，尾音上扬，像动画片里的角色
+
+      - 语速很慢，每句话不超过10个字
+
+      - 大量使用「哇！」「太棒了！」「击个掌！」「抱抱！」等情绪化表达
+
+      - 多用叠词和拟声词：咚咚咚、哗啦啦、喵喵喵
+
+      - 称呼学生为「宝贝」或「小可爱」'
+    goal: '- 通过游戏和动作让小朋友参与进来
+
+      - 把每个知识点变成一个可以动手做的小任务
+
+      - 让小朋友觉得自己在"玩"而不是在"学"
+
+      - 在提出互动指令后给小朋友充分的反应时间'
+    workflow: '- 1. 夸张的打招呼（比如：小可爱～我们来玩一个超好玩的游戏！）
+
+      - 2. 用身体动作引入要点（比如：来，跟老师一起拍拍手！）
+
+      - 3. 慢慢讲出核心内容
+
+      - 4. 击掌/跳舞/放烟花庆祝'
+    scope: '- 每句话不超过10个字
+
+      - 每章内容控制在2分钟内讲完
+
+      - 不要连续讲超过3句话，中间留白让孩子跟上
+
+      - 输出长度：2-3句，总共不超过50字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 谁不一样？一起跺脚找一找
+  skeleton:
+  - text: 看见4只大象和1只兔子，一起学大象跺脚，发现兔子跳跳不一样。
+    experience:
+      primitive: sort_order
+      goal: 让小朋友通过跺脚动作观察动物特征，发现兔子与其他大象的不同
+      prompt: 宝贝，小动物们来啦！大家一起来学大象跺跺脚，看看谁和我们不一样？
+      props:
+        items:
+        - label: 🐘 大象
+          value: 1
+        - label: 🐘 大象
+          value: 1
+        - label: 🐰 兔子
+          value: 2
+        - label: 🐘 大象
+          value: 1
+        oddOneIdx: 2
+        mode: oddone
+  - text: 跟着老师喊"不一样"，拍手一次，找到捣蛋鬼！
+    experience:
+      primitive: sort_order
+      goal: 让小朋友通过喊口号和拍手确认找到不同动物，巩固观察结果
+      prompt: 小可爱，大家一起拍手喊"不一样"把捣蛋鬼找出来！哪只小动物是捣蛋鬼呀？
+      props:
+        items:
+        - label: 🐘 大象
+          value: 1
+        - label: 🐘 大象
+          value: 1
+        - label: 🐰 兔子
+          value: 2
+        - label: 🐘 大象
+          value: 1
+        oddOneIdx: 2
+        mode: oddone
+  interaction:
+    prompt: 小兔子藏起来了，大家一起跺脚，找找谁不一样？
+    expect_keywords:
+    - 跺脚
+    - 不一样
+- id: chapter_2
+  title: 用手指数一数，捉住捣蛋鬼
+  skeleton:
+  - text: 伸出小手，指一指哪个是兔子，一起说"兔子是捣蛋鬼"。
+    experience:
+      primitive: sort_order
+      goal: 让小朋友通过手指动作指出捣蛋动物，在动手中巩固观察和判断
+      prompt: 伸出你的小手指，指一指哪个小动物是捣蛋鬼！
+      props:
+        items:
+        - label: 🐘 大象
+          value: 1
+        - label: 🐘 大象
+          value: 1
+        - label: 🐰 兔子
+          value: 2
+        - label: 🐘 大象
+          value: 1
+        oddOneIdx: 2
+        mode: oddone
+  - text: 找到后，大家站起来跳舞转圈，放小星星烟花庆祝！
+    experience:
+      primitive: sort_order
+      goal: 让小朋友通过跳舞和庆祝强化成功找到捣蛋鬼的成就感
+      prompt: 捣蛋鬼找到了！站起来和老师一起跳舞转圈，放小星星烟花庆祝吧！
+      props:
+        items:
+        - label: 🐘 大象
+          value: 1
+        - label: 🐘 大象
+          value: 1
+        - label: 🐰 兔子
+          value: 2
+        - label: 🐘 大象
+          value: 1
+        oddOneIdx: 2
+        mode: oddone
+  interaction:
+    prompt: 伸出你的手指，数到3就学大象跺脚三下！
+    expect_keywords:
+    - 跺脚
+    - 三下
+- id: chapter_3
+  title: 小小侦探大考验：你来找
+  skeleton:
+  - text: 看屏幕图片，选出不一样的动物，手指点一点答案。
+    experience:
+      primitive: sort_order
+      goal: 让小朋友独立观察图片，运用所学知识找出与众不同的动物
+      prompt: 小侦探，仔细看屏幕！用手指点出哪个小动物和别人不一样？
+      props:
+        items:
+        - label: 🐘 大象
+          value: 1
+        - label: 🐘 大象
+          value: 1
+        - label: 🐰 兔子
+          value: 2
+        - label: 🐘 大象
+          value: 1
+        oddOneIdx: 2
+        mode: oddone
+  - text: 答对后和老师击掌，一起喊"我们赢啦"发射礼花！
+    experience:
+      primitive: sort_order
+      goal: 让小朋友通过击掌和欢呼庆祝胜利，强化完成任务的正向反馈
+      prompt: 太棒啦！和老师击个掌，一起喊"我们赢啦"发射漂亮的礼花！
+      props:
+        items:
+        - label: 🐘 大象
+          value: 1
+        - label: 🐘 大象
+          value: 1
+        - label: 🐰 兔子
+          value: 2
+        - label: 🐘 大象
+          value: 1
+        oddOneIdx: 2
+        mode: oddone
+  quiz:
+    question: 大象🐘要找到躲起来的兔子🐰，你觉得兔子最可能藏在哪里？我们一起学大象用鼻子喷水找一找吧！
+    options:
+    - key: A
+      text: 藏在茂密的草丛里🌿
+      correct: true
+    - key: B
+      text: 躲在冰箱里❄️
+      correct: false
+    - key: C
+      text: 挂在树杈上睡觉🌳
+      correct: false
+    explanation_correct: 太棒啦！你像小侦探一样找到了兔子！兔子确实喜欢躲在草丛里，因为它软软的毛和草很像呢！
+    explanation_wrong: 再想想哦，冰箱那么冷，兔子会冻坏的，而且兔子不会爬树睡觉呢！草丛才是兔子躲藏的好地方🌿

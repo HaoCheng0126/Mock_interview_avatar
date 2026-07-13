@@ -1,0 +1,231 @@
+course:
+  title: 小AI的脑波赛车大冒险
+  lang: zh
+  default_tts_speed: 0.88
+  persona:
+    name: 小思老师
+    style: 故事与线索主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.88
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向7-8岁小学低年级小朋友的思维课老师
+
+      - 教学策略：故事与线索主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音温暖有力，像会讲故事的姐姐/哥哥
+
+      - 语速适中，每句话不超过15个字
+
+      - 多用角色化和情景化表达：「小侦探们」「队员们」「我们接到一个新任务！」
+
+      - 做错时的鼓励话术：「差一点就猜对了，我们看看另一个线索？」
+
+      - 称呼学生为「小侦探」或「小队员」'
+    goal: '- 把讲课变成一次探险或破案任务
+
+      - 让小朋友在故事中自然地学到知识点
+
+      - 做错时给予成长型思维的鼓励，保护自尊心
+
+      - 在提出思考问题后给小朋友留思考的时间'
+    workflow: '- 1. 用故事情境开场（比如：小侦探们，今天接到一个新案子！）
+
+      - 2. 在故事推进中自然引出要点
+
+      - 3. 提出一个需要"破案"的思考问题
+
+      - 4. 不管答案如何都先肯定，然后引导思考'
+    scope: '- 每句话不超过15个字
+
+      - 每个要点展开成3-4句
+
+      - 不要输出任何括号注释或舞台指导
+
+      - 输出长度：3-4句，总共不超过80字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 发现魔法头盔
+  skeleton:
+  - text: 小AI收到神秘头盔，屏幕亮起蓝色脑波线。
+    experience:
+      primitive: brainwave_racer
+      goal: 观察头盔如何扫描脑波
+      prompt: 这是脑波扫描台。点“切换状态”，看看信号怎样变化。
+      props:
+        mode: scan
+        active: 正常
+        states:
+        - label: 分心
+          focus: 32
+          quality: 信号有点乱
+        - label: 正常
+          focus: 58
+          quality: 信号开始变稳
+        - label: 专注
+          focus: 86
+          quality: 平静清楚的脑波信号
+  - text: 小AI坐直身体，脑波线慢慢变稳，头盔灯也更亮。
+    experience:
+      primitive: brainwave_racer
+      goal: 理解专注会让脑波更稳定
+      prompt: 点“提升专注”，让头盔读到更清楚的脑波信号。
+      props:
+        mode: scan
+        active: 分心
+        states:
+        - label: 分心
+          focus: 28
+          quality: 像没排好队的小点点
+        - label: 正常
+          focus: 63
+          quality: 信号正在排队
+        - label: 专注
+          focus: 91
+          quality: 平静清楚的脑波信号
+  - text: 当信号变清楚，赛车启动灯亮了，小AI准备出发。
+    experience:
+      primitive: brainwave_racer
+      goal: 连接稳定脑波和赛车启动
+      prompt: 让专注值升高，看看赛车系统是不是准备好了。
+      props:
+        mode: scan
+        active: 专注
+        states:
+        - label: 分心
+          focus: 35
+          quality: 赛车还在等待
+        - label: 正常
+          focus: 68
+          quality: 赛车开始预热
+        - label: 专注
+          focus: 94
+          quality: 启动信号已锁定
+  interaction:
+    prompt: 如果你是小AI，第一次戴上脑波头盔，你会先观察哪个地方？
+    expect_keywords:
+    - 头盔
+    - 脑波
+    - 灯
+    - 屏幕
+    - 赛车
+- id: chapter_2
+  title: 解密专注信号
+  skeleton:
+  - text: 脑波不会自己开车，需要AI助手把它翻译成指令。
+    experience:
+      primitive: brainwave_racer
+      goal: 理解脑波到赛车指令的转换链路
+      prompt: 点“发送信号”，看脑波怎样一步步变成赛车指令。
+      props:
+        mode: signal
+        steps:
+        - 脑波输入
+        - AI识别
+        - 生成指令
+        - 赛车响应
+        commands:
+        - 等待清楚信号
+        - 识别专注模式
+        - 发出加速指令
+        - 赛车开始前进
+  - text: 清楚的信号会变成加速，乱跳的信号会让赛车慢下来。
+    experience:
+      primitive: brainwave_racer
+      goal: 对比不同信号带来的赛车反应
+      prompt: 点“查看指令”，看看专注信号最后会让赛车做什么。
+      props:
+        mode: signal
+        steps:
+        - 平静脑波
+        - AI判断
+        - 加速指令
+        - 稳稳前进
+        commands:
+        - 平静清楚的脑波信号
+        - 专注力足够
+        - 轻轻加速
+        - 赛车稳稳冲出
+  - text: 考考你：哪一种信号最适合让赛车加速？
+  quiz:
+    question: 小AI的赛车在赛道上飞驰，脑波显示器上出现了三种信号。哪种信号表示小AI的专注力最强？
+    options:
+    - key: A
+      text: 平静清楚的脑波信号
+      correct: true
+    - key: B
+      text: 忽高忽低的乱跳信号
+      correct: false
+    - key: C
+      text: 被干扰打断的红色信号
+      correct: false
+    explanation_correct: 太棒啦！平静清楚的信号说明小AI很专注，赛车可以稳稳加速。
+    explanation_wrong: 没关系，我们再看信号。乱跳或被打断，说明小AI被干扰了，不适合加速。
+- id: chapter_3
+  title: 冲过终点线
+  skeleton:
+  - text: 现在轮到你当小AI的队友，用专注能量推动车子。
+    experience:
+      primitive: brainwave_racer
+      goal: 体验专注能量推动赛车前进
+      prompt: 点“提升专注”，看赛车沿着能量赛道向前跑。
+      props:
+        mode: race
+        focus: 55
+        distraction: false
+        car: AI
+  - text: 赛道旁弹出干扰信号，小AI需要先稳住脑波。
+    experience:
+      primitive: brainwave_racer
+      goal: 理解排除干扰后才能稳定加速
+      prompt: 干扰出现了！先点“排除干扰”，再提升专注。
+      props:
+        mode: race
+        focus: 48
+        distraction: true
+        car: AI
+  - text: 专注能量满格，赛车进入冲刺模式，终点就在前方。
+    experience:
+      primitive: brainwave_racer
+      goal: 完成专注控制赛车的最终挑战
+      prompt: 先把专注能量加满，再点“冲刺”冲过终点。
+      props:
+        mode: race
+        focus: 82
+        distraction: false
+        car: AI
+  interaction:
+    prompt: 如果你是小AI的队友，在冲过终点线的瞬间，你会用什么方式为他庆祝？
+    expect_keywords:
+    - 欢呼
+    - 拥抱
+    - 击掌
+    - 加油
+    - 胜利

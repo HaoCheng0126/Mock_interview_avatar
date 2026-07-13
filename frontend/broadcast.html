@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Avatar — Broadcast</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e1e4ed;
+    --text-dim: #8b90a0;
+    --accent: #6c8cff;
+    --accent-hover: #8ba3ff;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #topbar h1 { font-size: 15px; font-weight: 600; }
+  #topbar .spacer { flex: 1; }
+  #status {
+    font-size: 11px; padding: 4px 10px; border-radius: 99px;
+    font-weight: 500;
+  }
+  .status-idle { background: #2a2d3a; color: var(--text-dim); }
+  .status-connecting { background: #3d3520; color: var(--yellow); }
+  .status-connected { background: #1a3a2a; color: var(--green); }
+  .status-error { background: #3d1a1a; color: var(--red); }
+
+  #main {
+    flex: 1; display: flex; overflow: hidden;
+  }
+
+  #avatar-panel {
+    flex: 1; display: flex; flex-direction: column;
+    background: #000; position: relative; min-width: 0;
+    align-items: center; justify-content: center;
+  }
+  #avatar-container {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+  }
+  #avatar-container video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+  #avatar-placeholder {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--text-dim); font-size: 14px; pointer-events: none;
+    gap: 8px;
+  }
+  #avatar-placeholder.hidden { display: none; }
+  #avatar-placeholder .icon { font-size: 48px; opacity: 0.3; }
+
+  #right-panel {
+    width: 400px; min-width: 320px;
+    display: flex; flex-direction: column;
+    background: var(--panel); border-left: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  #script-area {
+    flex: 1; overflow-y: auto; padding: 12px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  #script-area .section-title {
+    font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 4px 0; border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+  .script-item {
+    padding: 8px 12px; border-radius: 8px;
+    font-size: 12px; line-height: 1.5;
+    background: #252836; color: var(--text-dim);
+    transition: all 0.3s;
+  }
+  .script-item.current {
+    background: #1a2a3d; color: var(--text);
+    border-left: 3px solid var(--accent);
+    font-weight: 500;
+  }
+  .script-item.played {
+    opacity: 0.4; text-decoration: line-through;
+  }
+  .script-item .label {
+    font-size: 10px; color: var(--text-dim); margin-bottom: 2px;
+  }
+  .script-item.current .label { color: var(--accent); }
+
+  #product-info {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    background: #1e2130;
+    font-size: 12px;
+  }
+  #product-info .product-name { font-weight: 600; color: var(--text); }
+  #product-info .product-meta { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+
+  #actions {
+    display: flex; gap: 8px; padding: 10px 12px;
+    border-top: 1px solid var(--border); flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  #manual-reply {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    background: #171a24;
+    flex-shrink: 0;
+  }
+  #manual-reply .manual-row {
+    display: flex;
+    gap: 8px;
+  }
+  #manual-message {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #10131b;
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+  }
+  #manual-message:focus { border-color: var(--accent); }
+  #manual-message:disabled { opacity: 0.5; cursor: not-allowed; }
+  #manual-status {
+    min-height: 16px;
+    margin-top: 6px;
+    color: var(--text-dim);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .btn-send {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-send:hover { background: var(--accent-hover); }
+  .btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
+  #actions button {
+    padding: 7px 14px; border-radius: 6px;
+    font-size: 12px; cursor: pointer; border: 1px solid var(--border);
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-connect {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .btn-connect:hover { background: var(--accent-hover); }
+  .btn-connect:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-disconnect {
+    background: #3d1a1a; color: var(--red); border-color: #5a2a2a;
+  }
+  .btn-disconnect:hover { border-color: var(--red); }
+  .btn-disconnect:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-broadcast { background: #252836; color: var(--text); }
+  .btn-broadcast:hover { border-color: var(--accent); }
+  .btn-broadcast:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-start { background: #1a3a2a; color: var(--green); border-color: #2a5a3a; }
+  .btn-start:hover { background: #2a4a3a; }
+  .btn-stop { background: #3d1a1a; color: var(--red); border-color: #5a2a2a; }
+  .btn-stop:hover { background: #4d2a2a; }
+
+  #error-banner {
+    display: none;
+    padding: 10px 16px; background: #3d1a1a; color: var(--red);
+    font-size: 12px; text-align: center;
+  }
+  #error-banner.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>📻 Live Avatar — Broadcast</h1>
+  <span class="spacer"></span>
+  <span id="status" class="status-idle">Disconnected</span>
+</div>
+
+<div id="error-banner">Cannot reach agent server — make sure the broadcast agent is running (<code>python broadcast/agent.py</code>)</div>
+
+<div id="main">
+  <div id="avatar-panel">
+    <div id="avatar-container"></div>
+    <div id="avatar-placeholder">
+      <span class="icon">📺</span>
+      <span>Click Connect to start</span>
+    </div>
+  </div>
+
+  <div id="right-panel">
+    <div id="product-info">
+      <div class="product-name" id="product-name">—</div>
+      <div class="product-meta" id="product-meta">Not connected</div>
+    </div>
+    <div id="script-area">
+      <div class="section-title">📜 Script Queue</div>
+      <div id="script-list" style="display:flex;flex-direction:column;gap:6px;">
+        <div class="script-item" style="text-align:center;color:var(--text-dim);padding:20px;">
+          Connect to load scripts...
+        </div>
+      </div>
+    </div>
+
+    <div id="manual-reply">
+      <div class="manual-row">
+        <input id="manual-message" type="text" placeholder="Type a question for the host..." disabled onkeydown="handleManualKeydown(event)">
+        <button id="btn-send-message" class="btn-send" onclick="sendManualMessage()" disabled>Send</button>
+      </div>
+      <div id="manual-status"></div>
+    </div>
+
+    <div id="actions">
+      <button id="btn-connect" class="btn-connect" onclick="doConnect()">🔗 Connect</button>
+      <button id="btn-disconnect" class="btn-disconnect" onclick="doDisconnect()" disabled>Disconnect</button>
+      <span style="flex:1;"></span>
+      <button id="btn-start" class="btn-broadcast btn-start" onclick="broadcastAction('start')" disabled>▶ Start</button>
+      <button id="btn-stop" class="btn-broadcast btn-stop" onclick="broadcastAction('stop')" disabled>⏹ Stop</button>
+      <button id="btn-pause" class="btn-broadcast" onclick="broadcastAction('pause')" disabled>⏸ Pause</button>
+      <button id="btn-resume" class="btn-broadcast" onclick="broadcastAction('resume')" disabled>▶ Resume</button>
+      <button id="btn-skip" class="btn-broadcast" onclick="broadcastAction('skip')" disabled>⏭ Skip</button>
+    </div>
+  </div>
+</div>
+
+<script src="./sdk.js"></script>
+<script>
+
+const $ = (id) => document.getElementById(id);
+const $status = $('status');
+const $placeholder = $('avatar-placeholder');
+const $avatarContainer = $('avatar-container');
+const $scriptList = $('script-list');
+const $productName = $('product-name');
+const $productMeta = $('product-meta');
+const $errorBanner = $('error-banner');
+const $manualMessage = $('manual-message');
+const $manualStatus = $('manual-status');
+const buttons = ['btn-connect', 'btn-disconnect', 'btn-start', 'btn-stop',
+                 'btn-pause', 'btn-resume', 'btn-skip'];
+
+let client = null;
+let isConnected = false;
+let broadcastRunning = false;
+let manualMessageSending = false;
+let pollTimer = null;
+
+function setStatus(cls, text) {
+  $status.className = cls;
+  $status.textContent = text;
+}
+
+function setConnected(connected) {
+  isConnected = connected;
+  $('btn-connect').disabled = connected;
+  $('btn-disconnect').disabled = !connected;
+  $('btn-start').disabled = !connected;
+  $('btn-stop').disabled = !connected;
+  $('btn-pause').disabled = !connected;
+  $('btn-resume').disabled = !connected;
+  $('btn-skip').disabled = !connected;
+  $manualMessage.disabled = !connected;
+  updateManualButton();
+  if (!connected) {
+    broadcastRunning = false;
+    $manualMessage.value = '';
+    $manualStatus.textContent = '';
+    updateBroadcastButtons();
+  }
+}
+
+function updateBroadcastButtons() {
+  $('btn-start').disabled = !isConnected || broadcastRunning;
+  $('btn-stop').disabled = !isConnected || !broadcastRunning;
+}
+
+function updateManualButton() {
+  $('btn-send-message').disabled =
+    !isConnected || manualMessageSending || !$manualMessage.value.trim();
+}
+
+// ---- Connect / Disconnect ----
+
+async function doConnect() {
+  $errorBanner.classList.remove('visible');
+  setStatus('status-connecting', 'Starting session...');
+  setConnected(false);
+
+  try {
+    let res = await fetch('/api/start-session', { method: 'POST' });
+    let data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    $avatarContainer.innerHTML = '';
+
+    client = LivekitSDK.createClient({
+      connectConfig: {
+        type: 'direct',
+        config: {
+          sfuUrl: data.sfuUrl,
+          userToken: data.userToken,
+        },
+      },
+      video: {
+        containerElement: $avatarContainer,
+        fitMode: 'contain',
+      },
+      audio: {
+        output: { enabled: true, volume: 1.0, muted: false },
+      },
+    });
+
+    client.events.on('sdk:connected', function() {
+      setStatus('status-connected', 'Connected');
+      setConnected(true);
+      $placeholder.classList.add('hidden');
+    });
+
+    client.events.on('sdk:disconnected', function() {
+      setStatus('status-idle', 'Disconnected');
+      setConnected(false);
+      $placeholder.classList.remove('hidden');
+    });
+
+    client.events.on('sdk:error', function(info) {
+      console.error('SDK error:', info.message);
+    });
+
+    await client.connect();
+
+    if (client.isMuted) client.unmute();
+    $placeholder.classList.add('hidden');
+
+    // Start polling broadcast status
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(pollBroadcastStatus, 1000);
+
+  } catch(err) {
+    console.error('Connection error:', err);
+    setStatus('status-error', 'Error');
+    setConnected(false);
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      $errorBanner.classList.add('visible');
+    }
+  }
+}
+
+async function doDisconnect() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (client) {
+    try { await client.disconnect(); } catch(e) {}
+    client = null;
+  }
+  try { await fetch('/api/stop-session', { method: 'POST' }); } catch(e) {}
+  setStatus('status-idle', 'Disconnected');
+  setConnected(false);
+  $placeholder.classList.remove('hidden');
+  $scriptList.innerHTML = '<div class="script-item" style="text-align:center;color:var(--text-dim);padding:20px;">Connect to load scripts...</div>';
+  $productName.textContent = '—';
+  $productMeta.textContent = 'Not connected';
+}
+
+// ---- Broadcast controls ----
+
+async function broadcastAction(action) {
+  try {
+    let res = await fetch('/api/broadcast/' + action, { method: 'POST' });
+    let data = await res.json();
+    if (data.success) {
+      if (action === 'start') { broadcastRunning = true; updateBroadcastButtons(); }
+      if (action === 'stop')  { broadcastRunning = false; updateBroadcastButtons(); }
+    }
+    // Immediately refresh status after action
+    pollBroadcastStatus();
+  } catch(e) {
+    console.error('Broadcast action error:', e);
+  }
+}
+
+// ---- Manual host reply ----
+
+function handleManualKeydown(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendManualMessage();
+  }
+}
+
+async function sendManualMessage() {
+  let text = $manualMessage.value.trim();
+  if (!text || !isConnected || manualMessageSending) return;
+
+  manualMessageSending = true;
+  updateManualButton();
+  $manualStatus.textContent = 'Sending...';
+
+  try {
+    let res = await fetch('/api/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    let data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to send');
+    $manualMessage.value = '';
+    $manualStatus.textContent = data.reply ? ('Host: ' + data.reply) : 'Sent';
+  } catch(e) {
+    console.error('Manual message error:', e);
+    $manualStatus.textContent = e.message || 'Send failed';
+  } finally {
+    manualMessageSending = false;
+    updateManualButton();
+  }
+}
+
+$manualMessage.addEventListener('input', updateManualButton);
+
+// ---- Poll broadcast status ----
+
+async function pollBroadcastStatus() {
+  if (!isConnected) return;
+  try {
+    let res = await fetch('/api/broadcast/status');
+    let data = await res.json();
+    if (data.success) return; // status returns flat dict with state field
+    // Handle both shapes: {success, ...} and direct status object
+    let status = data.state ? data : null;
+    if (!status) return;
+
+    broadcastRunning = status.state === 'broadcasting' || status.state === 'paused';
+    updateBroadcastButtons();
+
+    // Update current topic info
+    if (status.currentProduct) {
+      $productName.textContent = status.currentProduct.id || '—';
+      $productMeta.textContent =
+        'Script: ' + ((status.currentScriptIndex || 0) + 1) +
+        ' | Queue: ' + (status.queueRemaining || 0) + ' remaining';
+    }
+  } catch(e) {}
+}
+
+// ---- Session info on load ----
+
+async function fetchSessionInfo() {
+  try {
+    let res = await fetch('/api/session-info');
+    let data = await res.json();
+    if (data.userToken && data.sfuUrl) {
+      // Session exists, show connected state hint
+      $productMeta.textContent = 'Session ready — click Connect';
+    }
+  } catch(e) {}
+}
+fetchSessionInfo();
+
+</script>
+</body>
+</html>

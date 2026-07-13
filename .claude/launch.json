@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hub",
+      "runtimeExecutable": "python-agent/.venv/bin/python",
+      "runtimeArgs": ["python-agent/hub/hub.py"],
+      "port": 8000
+    },
+    {
+      "name": "interview-agent",
+      "runtimeExecutable": "python-agent/.venv/bin/python",
+      "runtimeArgs": ["python-agent/interview/agent.py"],
+      "port": 8083
+    }
+  ]
+}

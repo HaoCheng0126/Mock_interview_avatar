@@ -1,0 +1,15 @@
+avatar:
+  api:
+    key: ${LIVEAVATAR_API_KEY:lk_live_X3Rsn7zECd7JpNkXqJ8QxW0XtzpdyGxOC3SLGnODllg}
+    base-url: https://liveavatar.aimiai.com/vih/dispatcher
+  id: ${LIVEAVATAR_AVATAR_ID:avatar_01k56rnqaz15fz4t0ha4ja1132}
+  voice-id: ${LIVEAVATAR_VOICE_ID:}
+  sandbox:
+    enabled: false
+  asr:
+    developer-enabled: false
+  tts:
+    developer-enabled: false
+
+server:
+  port: 8081

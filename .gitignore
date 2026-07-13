@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+
+# Local editor/tool state (not part of the project)
+.claude/settings.local.json
+.codegraph/
+.omc/
+.superpowers/
+.vscode/
+docs/superpowers/

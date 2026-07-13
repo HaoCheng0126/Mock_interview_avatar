@@ -1,0 +1,249 @@
+course:
+  title: 城堡后面的隐形方块
+  lang: zh
+  default_tts_speed: 0.88
+  persona:
+    name: 小思老师
+    style: 故事与线索主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.88
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向7-8岁小学低年级小朋友的思维课老师
+
+      - 教学策略：故事与线索主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音温暖有力，像会讲故事的姐姐/哥哥
+
+      - 语速适中，每句话不超过15个字
+
+      - 多用角色化和情景化表达：「小侦探们」「队员们」「我们接到一个新任务！」
+
+      - 做错时的鼓励话术：「差一点就猜对了，我们看看另一个线索？」
+
+      - 称呼学生为「小侦探」或「小队员」'
+    goal: '- 把讲课变成一次探险或破案任务
+
+      - 让小朋友在故事中自然地学到知识点
+
+      - 做错时给予成长型思维的鼓励，保护自尊心
+
+      - 在提出思考问题后给小朋友留思考的时间'
+    workflow: '- 1. 用故事情境开场（比如：小侦探们，今天接到一个新案子！）
+
+      - 2. 在故事推进中自然引出要点
+
+      - 3. 提出一个需要"破案"的思考问题
+
+      - 4. 不管答案如何都先肯定，然后引导思考'
+    scope: '- 每句话不超过15个字
+
+      - 每个要点展开成3-4句
+
+      - 不要输出任何括号注释或舞台指导
+
+      - 输出长度：3-4句，总共不超过80字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 神秘信件与大白熊的求助
+  skeleton:
+  - text: 今天，侦探队长收到一封来自城堡的求助信，信上画着一只大白熊，它说："我脚下的积木有秘密！"
+    experience:
+      primitive: attribute_sort
+      goal: 接收神秘信件，了解大白熊的积木藏有秘密
+      title: 城堡来信
+      prompt: 先看看大白熊的信，积木堆里藏着什么秘密？
+      props:
+        activeClues: []
+        items: &id001
+        - key: a1
+          label: 积木A
+          front: true
+          side: true
+          top: true
+        - key: a2
+          label: 积木B
+          front: true
+          side: true
+          top: true
+        - key: a3
+          label: 积木C
+          front: true
+          side: true
+          top: true
+        - key: a4
+          label: 积木D
+          front: true
+          side: false
+          top: true
+        - key: a5
+          label: 积木E
+          front: false
+          side: false
+          top: true
+        clues: &id002
+        - key: front
+          label: 正面可见
+          attr: front
+          value: true
+        - key: side
+          label: 侧面可见
+          attr: side
+          value: true
+        - key: top
+          label: 俯视可见
+          attr: top
+          value: true
+  - text: 我们来到城堡后院，看到大白熊站在一堆五颜六色的积木上，可是从正面看，只能看到前面几块。
+    experience:
+      primitive: attribute_sort
+      goal: 从正面观察积木堆，发现只能看到部分积木
+      title: 正面观察
+      prompt: 点"正面可见"线索，看看从前面能看到几块积木。
+      props:
+        activeClues:
+        - front
+        items: *id001
+        clues: *id002
+  - text: 队长说："注意，有些积木可能藏在后面，就像隐形一样！我们得从不同角度观察才能发现。"
+    experience:
+      primitive: attribute_sort
+      goal: 理解隐形积木的概念，需要多个角度观察
+      title: 隐形积木发现
+      prompt: 对比正面和侧面线索，看看积木数量有什么不同？
+      props:
+        activeClues:
+        - front
+        - side
+        items: *id001
+        clues: *id002
+  interaction:
+    prompt: 如果你是大白熊的好朋友，收到神秘信件后，你会先检查城堡后面的哪个地方？
+    expect_keywords:
+    - 城堡后面
+    - 神秘信件
+    - 隐形方块
+- id: chapter_2
+  title: 正侧面大对比，找出隐形积木
+  skeleton:
+  - text: 侦探队长拿出纸和笔，让大家先画出从正面看到的积木堆——有4块积木排成一排。
+    experience:
+      primitive: attribute_sort
+      goal: 用正面视角画积木，标注可见的4块
+      title: 正面画图
+      prompt: 打开"正面可见"线索，数一数正面能看到几块积木亮起来。
+      props:
+        activeClues:
+        - front
+        items: *id001
+        clues: *id002
+  - text: 再画出从侧面看到的形状——咦，只有3块！那多出的一块去了哪里？原来它藏在后面。
+    experience:
+      primitive: attribute_sort
+      goal: 对比侧面视角，发现正侧面的积木数量不同
+      title: 侧面画图
+      prompt: 打开"侧面可见"线索，比较正侧面各能看到几块。
+      props:
+        activeClues:
+        - front
+        - side
+        items: *id001
+        clues: *id002
+  - text: 孩子们兴奋地喊："我们找到隐形积木了！"队长表扬说："真棒，你们发现了新线索！"
+    experience:
+      primitive: attribute_sort
+      goal: 总结发现，正面看到、侧面看不到的积木就是隐形的
+      title: 找到隐形积木
+      prompt: 看看哪些积木正面亮、侧面不亮——它们就是隐形积木！
+      props:
+        activeClues:
+        - front
+        - side
+        items: *id001
+        clues: *id002
+  interaction:
+    prompt: 如果你是城堡建筑师，从哪里开始找隐藏的积木？
+    expect_keywords:
+    - 侧面
+    - 对比
+    - 正面
+- id: chapter_3
+  title: 俯视大揭秘，数不清的隐藏块
+  skeleton:
+  - text: 大白熊说："还有更多的隐藏积木呢！"这次我们爬到高处，从上面俯看积木堆。
+    experience:
+      primitive: attribute_sort
+      goal: 从俯视角度观察积木堆
+      title: 俯视观察
+      prompt: 打开"俯视可见"线索，从上面看能看到几块积木？
+      props:
+        activeClues:
+        - top
+        items: *id001
+        clues: *id002
+  - text: 把俯视图和正视图放在一起对比，发现有几块积木从上面能看到，从正面却看不到——它们也是隐形的！
+    experience:
+      primitive: attribute_sort
+      goal: 对比俯视和正面，发现俯视能看到的额外积木
+      title: 俯视与正面对比
+      prompt: 同时打开"俯视可见"和"正面可见"线索，找找从上面能看到、从前面却看不到的积木。
+      props:
+        activeClues:
+        - front
+        - top
+        items: *id001
+        clues: *id002
+  - text: 最后我们来个终极挑战：数一数这个积木堆总共有多少块？注意那些藏在里面的哦！（答案是5块）
+    experience:
+      primitive: attribute_sort
+      goal: 综合三个视角找出所有积木
+      title: 终极挑战
+      prompt: 打开所有三个线索，从正面、侧面和俯视综合判断，数一总数。
+      props:
+        activeClues:
+        - front
+        - side
+        - top
+        items: *id001
+        clues: *id002
+  quiz:
+    question: 小侦探在城堡后面发现了许多隐形方块，他数了数，觉得有5个，但实际上有些方块是隐藏的，需要从不同角度看。你觉得下面哪个说法是正确的？
+    options:
+    - key: A
+      text: 从正面看只有3个方块，所以总共有3个块。
+      correct: false
+    - key: B
+      text: 从侧面看还有2个隐藏块，所以总共有5个块。
+      correct: true
+    - key: C
+      text: 从上面看有4个块，所以总共有4个块。
+      correct: false
+    explanation_correct: 太棒了！你像真正的侦探一样从不同角度观察，找到了所有隐藏的方块！
+    explanation_wrong: 哎呀，这个答案好像对，但别忘了有些方块的藏起来了哦！试试换个角度思考，你一定可以找到全部方块！

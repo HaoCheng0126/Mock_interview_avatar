@@ -1,0 +1,25 @@
+settings:
+  loop: true
+  lang: en
+  default_tts_speed: 1.0
+  default_pause_ms: 800
+  chunk_delay_ms: 0
+  default_loop_video: YOUR_VIDEO_RESOURCE_ID
+  # Optional TikTok Live monitoring. Leave empty to disable.
+  live_url: ""
+  comment_cooldown_s: 10
+  join_cooldown_s: 30
+
+products:
+  - id: demo_product
+    name: Demo Product
+    description: Replace this with your product, topic, or show description.
+    url: ""
+    loop_video: YOUR_VIDEO_RESOURCE_ID
+    tts_speed: 1.0
+    pause_after_script_ms: 800
+    video_scripts:
+      - video: YOUR_VIDEO_RESOURCE_ID
+        scripts:
+          - Replace this with the first prepared narration line.
+          - Replace this with the second prepared narration line.

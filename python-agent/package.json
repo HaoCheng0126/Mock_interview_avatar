@@ -1,0 +1,21 @@
+{
+  "name": "python-agent",
+  "version": "1.0.0",
+  "description": "Three Python-based digital human agents for the Live Avatar platform.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "js-yaml": "^4.2.0",
+    "playwright": "^1.61.0"
+  }
+}

@@ -1,0 +1,220 @@
+course:
+  title: 外卖侠的最快路线：数字迷宫大挑战
+  lang: zh
+  default_tts_speed: 0.92
+  persona:
+    name: 小思老师
+    style: 策略与深度互动
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.92
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向9-10岁小学中高年级小朋友的思维课老师
+
+      - 教学策略：策略与深度互动
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音清晰有力，语速可以适当加快
+
+      - 每句话不超过20个字，但可以用更复杂的句式和逻辑词
+
+      - 用"挑战者"语气：敢不敢试试？看看你能不能比老师先想到？
+
+      - 称赞话术强调聪明感：「这个思路很厉害！」「你是怎么想到的？」
+
+      - 称呼学生为「小挑战者」或「小天才」'
+    goal: '- 挑战孩子的思维能力，让他们觉得"我变聪明了"
+
+      - 通过追问和PK激发思考深度
+
+      - 鼓励孩子用语言表达自己的思考过程
+
+      - 不满足于正确答案，追问"为什么"'
+    workflow: '- 1. 抛出一个有趣的挑战或谜题
+
+      - 2. 引导孩子推理和发现
+
+      - 3. 追问「你怎么想的？」让孩子表达思维过程
+
+      - 4. 总结+升级：「下一关更难，敢不敢来？」'
+    scope: '- 每句话不超过20个字
+
+      - 每个要点展开成4-5句
+
+      - 可以使用简单的逻辑连接词（因为/所以/但是）
+
+      - 输出长度：4-5句，总共不超过120字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 迷宫初探：谁是最短路线之王？
+  skeleton:
+  - text: 想象你是一个外卖员，要从起点走到终点送餐，中间有好多岔路，哪条路最短？
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 让小朋友理解地图上起点到终点最短路径的概念
+      prompt: 小挑战者，用方向键从起点🟢走到终点🏠，看看你能用几步到达？
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  - text: 和AI同学比赛：在格点地图上找出从A到B的最短路径，看谁先找到！
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 让小朋友在实践比赛中独立找出最短路径
+      prompt: 这次试试自己规划路线，走完之后点击「最短路径」按钮，看看你的路线是不是最短路！
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  - text: 成功找到最短路径，就能获得聪明值，证明你比迷宫还厉害！
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 巩固最短路径的寻找方法，获得成就感
+      prompt: 换一张新地图再挑战一次，从起点走到终点，别忘了避开障碍物猫咪🐱！
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  interaction:
+    prompt: 如果有两条路，一条短但堵车，一条长但畅通，你选哪条？为什么？
+    expect_keywords:
+    - 时间
+    - 距离
+    - 障碍
+    - 选择
+- id: chapter_2
+  title: 双地点挑战：路线越多，越要动脑
+  skeleton:
+  - text: 现在要去两个地方送货，比如先到C再到D，或者先到D再到C，哪种顺序总路程更短？
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 让小朋友理解多目标路径规划中顺序会影响总距离
+      prompt: 现在要先去一个点取餐再到终点，试试两种顺序各走一次，比较哪条路线总步数更少！
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  - text: 来试一试：从起点出发，经过两个点再回终点，有多少种不同的走法？算算每种的总距离。
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 让小朋友探索多目标路径排序对距离的影响
+      prompt: 设计两条不同的送货顺序，分别走一遍并记录步数，看看哪条更快！
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  - text: 小测验：给你三个地点，你能快速找出所有路线并选出最短的吗？和AI比比看！
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 通过测验检验小朋友对多目标路径规划的理解
+      prompt: 再走一遍，观察不同顺序对路线长度的影响，你发现规律了吗？
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  quiz:
+    question: 外卖侠需要先到A点取餐，再到B点送餐。从起点到A有两条路：一条近路（5分钟，但正在施工，实际需要8分钟），一条远路（7分钟，畅通无阻）。从A到B也有两条路：一条捷径（2分钟，但需要等电梯，实际需要5分钟），一条大路（4分钟，直接到达）。请问，选择哪条路线组合可以让外卖侠最快到达B点？
+    options:
+    - key: A
+      text: 近路+捷径（表面5+2=7分钟）
+      correct: false
+    - key: B
+      text: 近路+大路（表面5+4=9分钟）
+      correct: false
+    - key: C
+      text: 远路+捷径（表面7+2=9分钟）
+      correct: false
+    - key: D
+      text: 远路+大路（表面7+4=11分钟）
+      correct: true
+    explanation_correct: 太棒了！你太聪明了！你没有被表面的数字迷惑，而是想到了实际的时间。远路加大路虽然看起来数字大，但实际只要11分钟，是最快的！
+    explanation_wrong: 咦？你是怎么想的？是不是只看了表面数字？要记住，有些路看起来短，但可能有隐藏的等待时间哦！再算一算实际需要的时间吧。
+  interaction:
+    prompt: 如果两个顾客方向相反，你会先送哪个？为什么？
+    expect_keywords:
+    - 距离
+    - 时间
+    - 顺序
+    - 方向
+- id: chapter_3
+  title: 终极任务：四个地点的最佳路径
+  skeleton:
+  - text: 现在有四个地方要送，所有可能的路线有多少条？（答案：24种！）全部算一遍可不容易。
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 让小朋友直观感受地点数量增长时路线数量的爆炸性增长
+      prompt: 四个目的地全部走完，看看最短路线需要多少步？你能找出比其他同学更短的路线吗？
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  - text: 我们来找规律：有没有什么策略可以更快地找到最短路线？比如先找最远的？还是最近的？
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 引导小朋友归纳路径规划的策略和启发式方法
+      prompt: 仔细观察最短路线，想想为什么它是最短的？在走的过程中你使用了什么技巧？
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  - text: 批判思考：如果多加一个订单，路线数量会暴增，你觉得外卖员应该怎么规划才最高效？
+    experience:
+      primitive: grid_explorer
+      mode: pathfind
+      goal: 激发小朋友对组合优化问题的批判性思考和实际应用
+      prompt: 再送一次，但这次尝试用一种新的顺序！你觉得怎样的顺序最好？说出你的理由！
+      props:
+        gridSize: 5
+        start: [0,0]
+        end: [4,4]
+        obstacles: [[1,1],[3,3]]
+  interaction:
+    prompt: 外卖侠有四个送餐地点，你会选择什么顺序？为什么？
+    expect_keywords:
+    - 顺序
+    - 理由
+    - 距离
+    - 时间
+    - 障碍

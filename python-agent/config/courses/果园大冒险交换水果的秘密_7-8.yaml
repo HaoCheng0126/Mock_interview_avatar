@@ -1,0 +1,208 @@
+course:
+  title: 果园大冒险：交换水果的秘密
+  lang: zh
+  default_tts_speed: 0.88
+  persona:
+    name: 小思老师
+    style: 故事与线索主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.88
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向7-8岁小学低年级小朋友的思维课老师
+
+      - 教学策略：故事与线索主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音温暖有力，像会讲故事的姐姐/哥哥
+
+      - 语速适中，每句话不超过15个字
+
+      - 多用角色化和情景化表达：「小侦探们」「队员们」「我们接到一个新任务！」
+
+      - 做错时的鼓励话术：「差一点就猜对了，我们看看另一个线索？」
+
+      - 称呼学生为「小侦探」或「小队员」'
+    goal: '- 把讲课变成一次探险或破案任务
+
+      - 让小朋友在故事中自然地学到知识点
+
+      - 做错时给予成长型思维的鼓励，保护自尊心
+
+      - 在提出思考问题后给小朋友留思考的时间'
+    workflow: '- 1. 用故事情境开场（比如：小侦探们，今天接到一个新案子！）
+
+      - 2. 在故事推进中自然引出要点
+
+      - 3. 提出一个需要"破案"的思考问题
+
+      - 4. 不管答案如何都先肯定，然后引导思考'
+    scope: '- 每句话不超过15个字
+
+      - 每个要点展开成3-4句
+
+      - 不要输出任何括号注释或舞台指导
+
+      - 输出长度：3-4句，总共不超过80字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 发现神秘果园
+  skeleton:
+  - text: 在一个阳光明媚的早晨，小侦探们发现了一片神奇果园，里面长满了苹果、橘子和菠萝。
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 2个苹果 = 1个橘子
+        chainAnswer: ''
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  - text: 果园里有个智慧爷爷，他告诉大家一个秘密：用2个苹果可以换1个橘子，用3个橘子可以换1个菠萝。
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 3个橘子 = 1个菠萝
+        chainAnswer: ''
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  - text: 小侦探们先试着用苹果换橘子，发现2个苹果正好换1个橘子，真是太有趣了！
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 2个苹果 = 1个橘子
+        - 3个橘子 = 1个菠萝
+        chainAnswer: ''
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  interaction:
+    prompt: 如果你是果园小侦探，你会先调查什么线索来发现水果交换的秘密？
+    expect_keywords:
+    - 线索
+    - 水果交换
+    - 秘密
+    - 果园
+- id: chapter_2
+  title: 线索大串联
+  skeleton:
+  - text: 智慧爷爷提出了一个大难题：已知1个菠萝能换3个橘子，1个橘子能换2个苹果，那么1个菠萝能换几个苹果呢？
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 1个菠萝 = 3个橘子
+        - 1个橘子 = 2个苹果
+        chainAnswer: '?'
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  - text: 小侦探们开始动手摆弄水果模型，把菠萝一步一步拆成苹果，发现原来需要6个苹果！
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 1个菠萝 → 3个橘子
+        - 3个橘子 → 6个苹果
+        chainAnswer: 6个苹果 🍎
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  - text: 大家恍然大悟：只要找到中间的橘子，就能像爬楼梯一样找出答案，逆向思维真厉害！
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 2个苹果 = 1个橘子
+        - 3个橘子 = 1个菠萝
+        - ∴ 1个菠萝 = ? 个苹果
+        chainAnswer: 6个苹果 🍎
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  interaction:
+    prompt: 小侦探，你有三条线索：水果地图、神秘脚印、无署名信，先查哪个？
+    expect_keywords:
+    - 水果地图
+    - 神秘脚印
+    - 无署名信
+- id: chapter_3
+  title: 最终谜题破解
+  skeleton:
+  - text: 智慧爷爷又出新题：已知2个苹果换1个橘子，3个橘子换1个菠萝，请问1个菠萝能换几个苹果？
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 2个苹果 = 1个橘子
+        - 3个橘子 = 1个菠萝
+        chainAnswer: '?'
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  - text: 小侦探们运用刚才学到的逆向思维，先算菠萝换橘子，再算橘子换苹果，一步步推理。
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 1个菠萝 = 3个橘子
+        - 3个橘子 = 6个苹果
+        chainAnswer: 6个苹果 🍎
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  - text: 最终大家得出答案：1个菠萝能换6个苹果！智慧爷爷夸大家是聪明的侦探。
+    experience:
+      primitive: logic_grid
+      mode: chain
+      props:
+        chainSteps:
+        - 2个苹果 = 1个橘子
+        - 3个橘子 = 1个菠萝
+        - ∴ 1个菠萝 = 6个苹果
+        chainAnswer: 6个苹果 🍎
+      goal: 理解等价交换，用代换法推导答案
+      prompt: 看看水果交换规则，一步一步推出答案。
+  quiz:
+    question: 小侦探，果园里的水果们排着队：苹果、香蕉、橘子。它们想玩交换游戏，把第一个和第三个交换位置。交换后，队伍变成什么样了呢？
+    options:
+    - key: A
+      text: 橘子、香蕉、苹果
+      correct: true
+    - key: B
+      text: 香蕉、苹果、橘子
+      correct: false
+    - key: C
+      text: 苹果、橘子、香蕉
+      correct: false
+    explanation_correct: 你真棒！苹果和橘子交换后，苹果到了最后，橘子到了第一，香蕉还在中间，所以是橘子、香蕉、苹果。你像福尔摩斯一样敏锐！
+    explanation_wrong: 别灰心！再想想：第一个和第三个交换，第一个是苹果，第三个是橘子，它们互换位置，中间的不变。试试看，你一定能找到答案！

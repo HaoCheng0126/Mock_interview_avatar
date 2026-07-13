@@ -1,0 +1,231 @@
+course:
+  title: 啪嗒啪嗒跳个舞
+  lang: zh
+  default_tts_speed: 0.85
+  persona:
+    name: 小思老师
+    style: 动作和游戏主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.85
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向4-6岁幼儿园中大班小朋友的思维课老师
+
+      - 教学策略：动作和游戏主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音夸张甜美，尾音上扬，像动画片里的角色
+
+      - 语速很慢，每句话不超过10个字
+
+      - 大量使用「哇！」「太棒了！」「击个掌！」「抱抱！」等情绪化表达
+
+      - 多用叠词和拟声词：咚咚咚、哗啦啦、喵喵喵
+
+      - 称呼学生为「宝贝」或「小可爱」'
+    goal: '- 通过游戏和动作让小朋友参与进来
+
+      - 把每个知识点变成一个可以动手做的小任务
+
+      - 让小朋友觉得自己在"玩"而不是在"学"
+
+      - 在提出互动指令后给小朋友充分的反应时间'
+    workflow: '- 1. 夸张的打招呼（比如：小可爱～我们来玩一个超好玩的游戏！）
+
+      - 2. 用身体动作引入要点（比如：来，跟老师一起拍拍手！）
+
+      - 3. 慢慢讲出核心内容
+
+      - 4. 击掌/跳舞/放烟花庆祝'
+    scope: '- 每句话不超过10个字
+
+      - 每章内容控制在2分钟内讲完
+
+      - 不要连续讲超过3句话，中间留白让孩子跟上
+
+      - 输出长度：2-3句，总共不超过50字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 踏脚拍手真好玩
+  skeleton:
+  - text: 小脚啪嗒踏一下，小手啪啪拍一下，我们一起来做动作吧！
+    experience:
+      primitive: pattern_sequence
+      mode: complete
+      props:
+        sequence:
+        - 🦶
+        - 👏
+        - 🦶
+        - 👏
+        - '?'
+        choices:
+        - 🦶
+        - 👏
+        - '✋'
+        answer: 0
+      goal: 发现踏脚拍手的动作规律
+      prompt: 看看踏脚和拍手的规律，点一点下一个是什么动作？
+  - text: 踏踏拍拍踏踏拍，像小兔子跳舞一样，你能跟着我做吗？
+    experience:
+      primitive: pattern_sequence
+      mode: complete
+      props:
+        sequence:
+        - 🦶
+        - 🦶
+        - 👏
+        - 👏
+        - 🦶
+        - '?'
+        choices:
+        - 🦶
+        - 👏
+        - '✋'
+        answer: 0
+      goal: 发现踏脚拍手的动作规律
+      prompt: 看看踏脚和拍手的规律，点一点下一个是什么动作？
+  interaction:
+    prompt: 你能像老师一样踏脚拍手吗？
+    expect_keywords:
+    - 踏脚
+    - 拍手
+- id: chapter_2
+  title: 红红黄黄排排队
+  skeleton:
+  - text: 红魔方红红，黄魔方黄黄，它们排成一排像彩虹糖！
+    experience:
+      primitive: pattern_sequence
+      mode: complete
+      props:
+        sequence:
+        - 🔴
+        - 🟡
+        - 🔴
+        - 🟡
+        - '?'
+        choices:
+        - 🔴
+        - 🟡
+        - 🟢
+        answer: 0
+      goal: 发现红黄交替的排列规律
+      prompt: 看看排队的颜色规律，点一点下一个是什么？
+  - text: 红黄红黄红？还是红红黄黄红？小手指一指下一个是什么颜色？
+    experience:
+      primitive: pattern_sequence
+      mode: complete
+      props:
+        sequence:
+        - 🔴
+        - 🟡
+        - 🔴
+        - 🟡
+        - '?'
+        choices:
+        - 🔴
+        - 🟡
+        - 🟢
+        answer: 0
+      goal: 发现红黄交替的排列规律
+      prompt: 看看排队的颜色规律，点一点下一个是什么？
+  quiz:
+    question: 大家一起做动作！红红黄黄排排队，谁排在第一个呀？
+    options:
+    - key: A
+      text: 🔴红色排第一个，拍拍手👏
+      correct: true
+    - key: B
+      text: 🟡黄色排第一个，跺跺脚🦶
+      correct: false
+    - key: C
+      text: 🟢绿色排第一个，摇摇头🙅
+      correct: false
+    explanation_correct: 太棒啦！红红黄黄排排队，红色在前面！拍拍手，我们一起为红色鼓掌👏！
+    explanation_wrong: 哎呀，再想想哦～红红黄黄排排队，红色是第一个，黄色是第二个。我们重新做一遍：红色在前，拍拍手👏！
+- id: chapter_3
+  title: 啪嗒红黄选一选
+  skeleton:
+  - text: 踏脚是红色，拍手是黄色，我们边跳边选下一个颜色！
+    experience:
+      primitive: pattern_sequence
+      mode: complete
+      props:
+        sequence:
+        - 🔴
+        - 🟡
+        - 🔴
+        - 🟡
+        - '?'
+        choices:
+        - 🔴
+        - 🟡
+        - 🟢
+        answer: 0
+      goal: 发现红黄交替的排列规律
+      prompt: 看看排队的颜色规律，点一点下一个是什么？
+  - text: 小星星亮晶晶，答对啦一起放烟花，砰砰啪！
+    experience:
+      primitive: pattern_sequence
+      mode: complete
+      props:
+        sequence:
+        - 🔴
+        - 🟡
+        - 🔴
+        - 🟡
+        - '?'
+        choices:
+        - 🔴
+        - 🟡
+        - 🟢
+        answer: 0
+      goal: 发现红黄交替的排列规律
+      prompt: 看看排队的颜色规律，点一点下一个是什么？
+  quiz:
+    question: 🎵 大家一起做动作！当老师说"啪嗒红"时，我们应该怎么做？
+    options:
+    - key: A
+      text: 🔴 跳起来！像红色小兔子一样蹦蹦跳
+      correct: true
+    - key: B
+      text: 🟡 蹲下来，像黄色小鸭子一样摇摇摆摆
+      correct: false
+    - key: C
+      text: 🔵 拍拍手，像蓝色小海豚一样拍水花
+      correct: false
+    explanation_correct: 🎉 太棒啦！红色就是跳起来！我们一起啪嗒啪嗒跳个舞吧！
+    explanation_wrong: 🤔 再想想哦，红色是热情的颜色，应该跳起来，黄色才是蹲下来呢～
+  interaction:
+    prompt: 选红色拍手三下，选黄色跺脚三下，快选一个做！
+    expect_keywords:
+    - 红色
+    - 黄色
+    - 拍手
+    - 跺脚

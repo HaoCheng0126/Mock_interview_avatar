@@ -1,0 +1,181 @@
+course:
+  title: 火柴棒变变变：6的秘密变身
+  lang: zh
+  default_tts_speed: 0.88
+  persona:
+    name: 小思老师
+    style: 故事与线索主导
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.88
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向7-8岁小学低年级小朋友的思维课老师
+
+      - 教学策略：故事与线索主导
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音温暖有力，像会讲故事的姐姐/哥哥
+
+      - 语速适中，每句话不超过15个字
+
+      - 多用角色化和情景化表达：「小侦探们」「队员们」「我们接到一个新任务！」
+
+      - 做错时的鼓励话术：「差一点就猜对了，我们看看另一个线索？」
+
+      - 称呼学生为「小侦探」或「小队员」'
+    goal: '- 把讲课变成一次探险或破案任务
+
+      - 让小朋友在故事中自然地学到知识点
+
+      - 做错时给予成长型思维的鼓励，保护自尊心
+
+      - 在提出思考问题后给小朋友留思考的时间'
+    workflow: '- 1. 用故事情境开场（比如：小侦探们，今天接到一个新案子！）
+
+      - 2. 在故事推进中自然引出要点
+
+      - 3. 提出一个需要"破案"的思考问题
+
+      - 4. 不管答案如何都先肯定，然后引导思考'
+    scope: '- 每句话不超过15个字
+
+      - 每个要点展开成3-4句
+
+      - 不要输出任何括号注释或舞台指导
+
+      - 输出长度：3-4句，总共不超过80字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 神秘的邀请函
+  skeleton:
+  - text: 看！数字6是用5根火柴拼的，像不像一个不倒翁？
+    experience:
+      primitive: paper_fold_explorer
+      goal: 观察数字6由5根火柴组成
+      prompt: 看看屏幕上的火柴人数字6，数一数它用了多少根火柴。
+      props:
+        mode: matchstick
+        target: '6'
+  - text: 侦探小队收到任务：只移动一根火柴，把6变成0！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 理解移动一根火柴就能让6变成0
+      prompt: 猜一猜，哪根火柴移动后6会变成0？
+      props:
+        mode: matchstick
+        target: '0'
+  - text: 大家来猜猜，移动哪根火柴能成功？先闭上眼睛想一想。
+    experience:
+      primitive: paper_fold_explorer
+      goal: 在脑中想象火柴移动过程
+      prompt: 闭上眼睛想象一下6的哪根火柴挪开后会出现一个圆圈。
+      props:
+        mode: matchstick
+        target: '0'
+  interaction:
+    prompt: 如果你是侦探，收到神秘邀请函，你会先查哪个线索？
+    expect_keywords:
+    - 邀请函
+    - 线索
+    - 侦探
+- id: chapter_2
+  title: 火柴大冒险
+  skeleton:
+  - text: 动手试试吧！点击一根火柴，拖动到新位置，注意只能移动一根哦。
+    experience:
+      primitive: paper_fold_explorer
+      goal: 动手操作火柴棒尝试变身
+      prompt: 点击"试试变0"按钮，看看哪根火柴需要移动。
+      props:
+        mode: matchstick
+        target: '0'
+  - text: 咦？有的移动变成了9，有的变成了其他样子，但还有一种神奇移动能变0！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 发现6可以变成不同数字
+      prompt: 试试按下"试试变9"和"试试变5"按钮，看看6还能变成什么。
+      props:
+        mode: matchstick
+        target: '9'
+  - text: 提示：0是封闭的圆圈，需要几根火柴？想想6哪里可以多出一个圈？
+    experience:
+      primitive: paper_fold_explorer
+      goal: 推理0的封闭形状需要几根火柴
+      prompt: 对比6和0，数数6比0多了一根什么位置的火柴。
+      props:
+        mode: matchstick
+        target: '0'
+  interaction:
+    prompt: 如果你是火柴小探险家，你会先移动哪根火柴让6变身？
+    expect_keywords:
+    - 移动
+    - 火柴
+    - 数字
+    - 变身
+- id: chapter_3
+  title: 变身大发现
+  skeleton:
+  - text: 原来，把6左上角那根火柴移到右下角，就变成了0！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 验证6变0的火柴移动方法
+      prompt: 再次点击"试试变0"，观察哪根火柴消失了。
+      props:
+        mode: matchstick
+        target: '0'
+  - text: 其实，移动一根火柴，6还能变成9、8、5……你想试试变成什么？
+    experience:
+      primitive: paper_fold_explorer
+      goal: 探索6能变形成多个数字
+      prompt: 试试"试试变8"和"试试变5"，看看6还能变成哪些数字。
+      props:
+        mode: matchstick
+        target: '8'
+  - text: 今天我们发现：一个数字动一动就能变成好多新数字，超级有趣！
+    experience:
+      primitive: paper_fold_explorer
+      goal: 总结一根火柴移动带来数字变化
+      prompt: 回顾一下6都能变成哪些数字，你最喜欢哪一个？
+      props:
+        mode: matchstick
+        target: '5'
+  quiz:
+    question: 小侦探，数字密码锁上显示的是5，但提示说只要移动一根火柴棒就能变成6。你知道应该移动哪一根吗？
+    options:
+    - key: A
+      text: 移动左上角的一根火柴到右下角
+      correct: true
+    - key: B
+      text: 移动中间的一根火柴到顶部
+      correct: false
+    - key: C
+      text: 移动底部的一根火柴到左边
+      correct: false
+    explanation_correct: 太棒了！你观察得真仔细，移动那根火柴后5就变成了6。你像个小侦探一样找到了正确的线索！
+    explanation_wrong: 没关系，这个谜题有点 tricky！我们来看看：5变成6需要把左上角的火柴移到右下角。你选的那个答案看起来可能对，但实际会变成另一个数字。再试试看，你一定能找到正确的方法！

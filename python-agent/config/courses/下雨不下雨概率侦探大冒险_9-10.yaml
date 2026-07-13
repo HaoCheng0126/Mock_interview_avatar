@@ -1,0 +1,226 @@
+course:
+  title: 下雨？不下雨？概率侦探大冒险
+  lang: zh
+  default_tts_speed: 0.92
+  persona:
+    name: 小思老师
+    style: 策略与深度互动
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.92
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向9-10岁小学中高年级小朋友的思维课老师
+
+      - 教学策略：策略与深度互动
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音清晰有力，语速可以适当加快
+
+      - 每句话不超过20个字，但可以用更复杂的句式和逻辑词
+
+      - 用"挑战者"语气：敢不敢试试？看看你能不能比老师先想到？
+
+      - 称赞话术强调聪明感：「这个思路很厉害！」「你是怎么想到的？」
+
+      - 称呼学生为「小挑战者」或「小天才」'
+    goal: '- 挑战孩子的思维能力，让他们觉得"我变聪明了"
+
+      - 通过追问和PK激发思考深度
+
+      - 鼓励孩子用语言表达自己的思考过程
+
+      - 不满足于正确答案，追问"为什么"'
+    workflow: '- 1. 抛出一个有趣的挑战或谜题
+
+      - 2. 引导孩子推理和发现
+
+      - 3. 追问「你怎么想的？」让孩子表达思维过程
+
+      - 4. 总结+升级：「下一关更难，敢不敢来？」'
+    scope: '- 每句话不超过20个字
+
+      - 每个要点展开成4-5句
+
+      - 可以使用简单的逻辑连接词（因为/所以/但是）
+
+      - 输出长度：4-5句，总共不超过120字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 第一章：概率是什么？抛硬币学起来
+  skeleton:
+  - text: 概率就是可能性的大小，比如抛硬币正面朝上的概率是50%。
+    experience:
+      primitive: bar_chart
+      goal: 引入概率概念，用抛硬币的例子说明50%的含义
+      prompt: 抛一枚硬币，正面朝上还是反面朝上？屏幕上有两种可能，它们的概率各是多少？看看柱状图，猜猜哪根柱子代表正面？
+      props:
+        mode: compare
+        items:
+        - label: 正面
+          value: 50
+        - label: 反面
+          value: 50
+  - text: 降水概率80%并不代表一定会下雨，而是说有80%的可能性下雨。
+    experience:
+      primitive: bar_chart
+      goal: 用降水概率举例，让学生理解概率是可能性而非确定性
+      prompt: 天气预报说降水概率80%，是不是代表一定会下雨？看看柱状图，80%的柱子和100%的柱子有什么不同？说说你的发现！
+      props:
+        mode: compare
+        items:
+        - label: 下雨可能性
+          value: 80
+        - label: 不下雨可能性
+          value: 20
+  - text: 学会用数字描述"可能"和"不可能"，就像给可能性打分。
+    experience:
+      primitive: bar_chart
+      goal: 帮学生建立从定性到定量的概率思维，用数字给可能性分级
+      prompt: 试试给不同事件的可能性打分！太阳从东边升起——几分？明天可能下雨——几分？从0分到100分，在柱状图上拖一拖，看看你的判断准不准！
+      props:
+        mode: compare
+        items:
+        - label: 太阳从东边升起
+          value: 100
+        - label: 明天可能下雨
+          value: 50
+        - label: 抛硬币正面朝上
+          value: 50
+  interaction:
+    prompt: 如果抛一枚硬币10次，你觉得会恰好5次正面、5次反面吗？为什么？
+    expect_keywords:
+    - 不一定
+    - 可能
+    - 运气
+    - 随机
+- id: chapter_2
+  title: 第二章：80% ≠ 100%！概率不是肯定
+  skeleton:
+  - text: 80%降水概率意味着每10次中有8次下雨，但仍有2次不下雨。
+    experience:
+      primitive: bar_chart
+      goal: 用具体数字诠释80%的含义，强调概率不等于确定性
+      prompt: 来做个实验！假设有10天降水概率都是80%，屏幕上会模拟这10天的结果。仔细数数，几天下了雨，几天没下？和80%这个数对得上吗？
+      props:
+        mode: compare
+        items:
+        - label: 下雨（约8天）
+          value: 80
+        - label: 不下雨（约2天）
+          value: 20
+  - text: 不可能事件的概率是0，必然事件的概率是1。
+    experience:
+      primitive: bar_chart
+      goal: 建立概率的边界概念，理解0和1（0%和100%）两端的含义
+      prompt: 有些事一定不会发生，概率是0；有些事一定会发生，概率是100%。看看屏幕上的事件，你在柱状图上把它们拖到正确的位置吧！
+      props:
+        mode: compare
+        items:
+        - label: 太阳从西边升起
+          value: 0
+        - label: 明天太阳升起
+          value: 100
+        - label: 抛硬币正面朝上
+          value: 50
+  - text: 概率是风险评估工具，天气预报说"可能下雨"就是给你一个风险提示。
+    experience:
+      primitive: bar_chart
+      goal: 引导理解概率的实际应用——作为决策参考而非绝对预言
+      prompt: 概率就像天气预报给你的提醒——80%下雨，你带伞；20%下雨，你就不带。看看柱状图，不同概率下你会怎么做决定？和AI同学比一比！
+      props:
+        mode: compare
+        items:
+        - label: 高概率（带伞）
+          value: 80
+        - label: 低概率（不带伞）
+          value: 20
+  quiz:
+    question: 天气预报说明天降水概率80%，下列哪种说法是正确的？
+    options:
+    - key: A
+      text: 明天一定会下雨
+      correct: false
+    - key: B
+      text: 明天80%的时间会下雨
+      correct: false
+    - key: C
+      text: 明天很可能下雨，但也可能不下雨
+      correct: true
+    - key: D
+      text: 明天有80%的可能会下雨，所以肯定下
+      correct: false
+    explanation_correct: 你太聪明了！概率80%表示可能性很大，但不是100%，所以仍有可能不下雨。你理解得很棒！
+    explanation_wrong: 你是怎么想的？注意：概率80%不等于肯定，也不是指时间比例，而是指发生的可能性很大，但仍有不确定哦。
+- id: chapter_3
+  title: 第三章：我是概率决策小能手
+  skeleton:
+  - text: 根据降水概率决定是否带伞：70%以上带伞，30%以下不带。
+    experience:
+      primitive: bar_chart
+      goal: 引导将概率知识应用到实际决策中，建立概率阈值思维
+      prompt: 给你一个决策规则：降水概率超过70%就带伞，低于30%就不带。屏幕上出现不同的概率数字，你快速决定带伞还是不带？和AI同学比比谁更快！
+      props:
+        mode: compare
+        items:
+        - label: 70%以上（带伞）
+          value: 70
+        - label: 30%以下（不带伞）
+          value: 30
+  - text: 批判思考：如果天气预报说70%下雨你没带伞却下雨了，是天气预报错了吗？
+    experience:
+      primitive: bar_chart
+      goal: 培养批判性思维，理解概率不是预言，30%的可能性也会发生
+      prompt: 天气预报说70%下雨你没带伞，结果真的下雨了！你觉得天气预报有问题吗？看看柱状图，那30%的柱子里是不是也藏着下雨的可能性？仔细想想！
+      props:
+        mode: compare
+        items:
+        - label: 不下雨
+          value: 30
+        - label: 下雨
+          value: 70
+  - text: 和AI同学PK：遇到不同概率，谁先做出最佳决策？
+    experience:
+      primitive: bar_chart
+      goal: 通过PK巩固概率决策能力，在不同情境下快速做出合理选择
+      prompt: 终极挑战！屏幕上会快速闪出不同的概率数字，你和AI同学谁先做出最佳决定？记住规则：超过70%带伞，低于30%不带。准备好了吗？开始！
+      props:
+        mode: compare
+        items:
+        - label: 带伞阈值
+          value: 70
+        - label: 不带伞阈值
+          value: 30
+  interaction:
+    prompt: 天气预报说下雨概率70%，但带伞很麻烦。你会怎么决定？为什么？
+    expect_keywords:
+    - 概率
+    - 决策
+    - 风险
+    - 权衡
+    - 可能

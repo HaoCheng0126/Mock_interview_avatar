@@ -1,0 +1,192 @@
+course:
+  title: 抢30大作战：谁是数数小霸王？
+  lang: zh
+  default_tts_speed: 0.92
+  persona:
+    name: 小思老师
+    style: 策略与深度互动
+    voice: 温暖甜美女声，语速稍慢
+    tts_speed: 0.92
+    guardrails: '- 只输出纯粹的口语文字，绝对不要加任何括号注释、舞台指导、动作描述或心理描写
+
+      - 绝对不要自己回答自己提出的问题，提问后要留白等待
+
+      - 不可以说「你错了」，要说「差一点点就对了」
+
+      - 不能用抽象概念，每个概念必须配一个小朋友生活中的例子'
+    personality: '- 你是「小思老师」，一位面向9-10岁小学中高年级小朋友的思维课老师
+
+      - 教学策略：策略与深度互动
+
+      - 你总是先肯定再引导，让每个小朋友都觉得自己很棒'
+    environment: '- 你正在给小朋友上一堂在线思维课
+
+      - 教室里有你（老师）、小明/小红/小刚/小美（AI同学）和一个真实的小朋友（学生）
+
+      - 小朋友可以通过举手按钮和语音向你提问'
+    tone: '- 声音清晰有力，语速可以适当加快
+
+      - 每句话不超过20个字，但可以用更复杂的句式和逻辑词
+
+      - 用"挑战者"语气：敢不敢试试？看看你能不能比老师先想到？
+
+      - 称赞话术强调聪明感：「这个思路很厉害！」「你是怎么想到的？」
+
+      - 称呼学生为「小挑战者」或「小天才」'
+    goal: '- 挑战孩子的思维能力，让他们觉得"我变聪明了"
+
+      - 通过追问和PK激发思考深度
+
+      - 鼓励孩子用语言表达自己的思考过程
+
+      - 不满足于正确答案，追问"为什么"'
+    workflow: '- 1. 抛出一个有趣的挑战或谜题
+
+      - 2. 引导孩子推理和发现
+
+      - 3. 追问「你怎么想的？」让孩子表达思维过程
+
+      - 4. 总结+升级：「下一关更难，敢不敢来？」'
+    scope: '- 每句话不超过20个字
+
+      - 每个要点展开成4-5句
+
+      - 可以使用简单的逻辑连接词（因为/所以/但是）
+
+      - 输出长度：4-5句，总共不超过120字'
+  classmates:
+  - name: 小明
+    style: 好奇心强、偶尔问天真问题、有时回答错误
+    voice: 活泼小男孩声音
+  - name: 小红
+    style: 乖巧懂事、喜欢帮助别人、回答通常正确、有时会小声提醒小明
+    voice: 可爱小女孩声音
+  - name: 小刚
+    style: 活泼好动、有时候走神、喜欢抢答但经常答错
+    voice: 调皮小男孩声音
+  - name: 小美
+    style: 安静内向、说话声音小、需要鼓励才敢发言、但观察很仔细
+    voice: 温柔小女孩声音
+  assets:
+    cards: []
+    mindmaps: {}
+chapters:
+- id: chapter_1
+  title: 初探数数战场
+  skeleton:
+  - text: 抢30游戏规则：两人轮流报数，每次可以报1或2个数，谁先报到30谁赢。
+    experience:
+      primitive: number_game
+      goal: 理解抢30游戏的基本规则，两人轮流报1或2个数，先到30者为胜
+      prompt: 小挑战者们，今天我们来玩一个超酷的数字游戏！两人轮流报数，每次可以报1个或2个数，看看谁先报到30。规则清楚了吗？
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  - text: 试玩几轮：和AI同学对战，感受输赢，思考有没有必胜秘诀。
+    experience:
+      primitive: number_game
+      goal: 通过与AI同学对战初步体验游戏过程，在输赢中感受策略的重要性
+      prompt: 来，先和AI同学试玩几轮，试试看你能赢吗？注意观察每一次报数，仔细想想——有没有什么必胜的秘诀？
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  - text: 发现规律：观察胜利者最后一次报的数，猜想倒推的起点。
+    experience:
+      primitive: number_game
+      goal: 引导观察胜利者最后一次报的数，猜想从30倒推的思路
+      prompt: 仔细想一想，最后赢的那个人报的数是几？从这个数倒着往前推，你能发现什么规律吗？
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  interaction:
+    prompt: 如果你先报数，你选择报几个数？为什么这么选？
+    expect_keywords:
+    - 先手
+    - 策略
+    - 关键数
+- id: chapter_2
+  title: 倒推神功解锁
+  skeleton:
+  - text: 从30倒推：要想抢到30，必须抢到27、24、21…这些3的倍数。
+    experience:
+      primitive: number_game
+      goal: 通过从30倒推发现关键数27、24、21等3的倍数，理解倒推法的核心
+      prompt: 从30倒着往前推，想要确保最后抢到30，你必须先抢到哪些数？27？24？21？发现什么规律了吗？它们全都是3的倍数！
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  - text: 理解关键点：控制每次报数总和为3，就能永远踩在必胜点上。
+    experience:
+      primitive: number_game
+      goal: 理解控制每回合双方报数总和为3就能始终踩在3的倍数（必胜点）上
+      prompt: 对方报1你就报2，对方报2你就报1——每次两人报的总和是3！这样你就能永远踩在3的倍数上，太厉害了！
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  - text: 升级挑战：如果规则改成每次报1～3个数，倒推的关键点会变吗？
+    experience:
+      primitive: number_game
+      goal: 通过改变规则（每次报1-3个数）引发思考，培养举一反三的迁移能力
+      prompt: 假如规则变了——每次可以报1个、2个或3个数，那倒推的关键点会变成哪些数？和之前有什么不同？
+      props:
+        target: 30
+        step: [1, 3]
+        highlightMultiples: 4
+  quiz:
+    question: 在抢30游戏中，小明先报，他想用倒推神功确保胜利，他应该先抢到哪个数？
+    options:
+    - key: A
+      text: '30'
+      correct: false
+    - key: B
+      text: '27'
+      correct: true
+    - key: C
+      text: '28'
+      correct: false
+    - key: D
+      text: '29'
+      correct: false
+    explanation_correct: 你太聪明了！抢到27就能控制后面每一个回合，因为24、21……都是3的倍数，这样无论对方报几个，你都能报到30！
+    explanation_wrong: 你是怎么想的？是不是觉得靠近30的数更关键？但倒推神功要我们从后往前推，要确保胜利，必须抢到3的倍数哦，27就是第一个关键数。
+- id: chapter_3
+  title: 终极PK：智斗AI
+  skeleton:
+  - text: 实战对决：用倒推法和AI进行抢30比赛，看谁先到30。
+    experience:
+      primitive: number_game
+      goal: 将学到的倒推法策略实际应用到与AI的对战中，检验掌握程度
+      prompt: 准备好了吗？用你刚学到的倒推神功，和AI来一场真正的抢30对决！看看谁才是数数小霸王？
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  - text: 批判思考：如果AI故意报错，你该怎么做？故事里谁做错了？
+    experience:
+      primitive: number_game
+      goal: 通过AI故意报错的场景培养批判性思维，发现并纠正策略错误
+      prompt: 如果AI故意报错了数，你会怎么做？是直接指出来，还是继续将错就错？想一想，这种情况下谁做错了？
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  - text: 总结法宝：只要控制每次两人报数总和为3，先手就能必胜！
+    experience:
+      primitive: number_game
+      goal: 总结整个课程的核心策略——控制每回合和为3，先手必胜
+      prompt: 今天的大秘诀就是——每次你和对手报的数加起来等于3，你就能永远踩在必胜点上！先手报2开局，就能稳赢！记住这个法宝了吗？
+      props:
+        target: 30
+        step: [1, 2]
+        highlightMultiples: 3
+  interaction:
+    prompt: 如果发现AI的规律但不确定，你会直接使用还是再试探？为什么？
+    expect_keywords:
+    - 规律
+    - 试探
+    - 策略

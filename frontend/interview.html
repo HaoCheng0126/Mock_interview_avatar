@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interview Avatar</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7f9;
+      color: #1f2937;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
+      align-items: start;
+      min-height: 100vh;
+    }
+    #avatar {
+      background: #111827;
+      min-height: 100vh;
+      display: grid;
+      align-items: start;
+      justify-items: center;
+      padding: 24px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    #avatar-stage {
+      width: min(calc((100vh - 48px) * 9 / 16), 100%);
+      max-width: 100%;
+      max-height: calc(100vh - 48px);
+      aspect-ratio: 9 / 16;
+      background: #020617;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    #avatar-stage video,
+    #avatar-stage canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    #interview-panel {
+      padding: 20px;
+      border-left: 1px solid #d8dee8;
+      background: #ffffff;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    h1 {
+      margin: 0 0 18px;
+      font-size: 32px;
+      line-height: 1.15;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    button {
+      margin: 0;
+      padding: 8px 12px;
+      border: 1px solid #b8c0cc;
+      background: #ffffff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button.primary {
+      background: #1d4ed8;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+    button.icon-button {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: top;
+    }
+    button.icon-button svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    button.icon-button[aria-pressed="true"] {
+      background: #e0f2fe;
+      border-color: #38bdf8;
+      color: #0369a1;
+    }
+    button.icon-button[aria-pressed="false"] {
+      background: #f8fafc;
+      color: #64748b;
+    }
+    button.icon-button .slash {
+      display: none;
+    }
+    button.icon-button[aria-pressed="false"] .slash {
+      display: block;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      padding: 12px;
+      border-radius: 6px;
+      min-height: 64px;
+      max-height: 180px;
+      margin: 6px 0 0;
+      overflow: auto;
+      box-sizing: border-box;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .prep-panel {
+      border: 1px solid #d8dee8;
+      border-radius: 10px;
+      background: #fbfcfe;
+      padding: 14px 16px 16px;
+      margin-bottom: 20px;
+    }
+    .prep-panel h2 {
+      margin: 0 0 4px;
+      font-size: 15px;
+    }
+    .prep-panel .prep-sub {
+      margin: 0 0 12px;
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+    .prep-field { margin-bottom: 10px; }
+    .prep-field label {
+      display: block;
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .prep-field input[type="text"],
+    .prep-field textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #b8c0cc;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #ffffff;
+    }
+    .prep-field textarea { resize: vertical; line-height: 1.5; }
+    .prep-field input:focus,
+    .prep-field textarea:focus {
+      outline: none;
+      border-color: #1d4ed8;
+    }
+    .prep-file-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .prep-file-row input[type="file"] { font-size: 12px; }
+    .prep-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    #prep-status { font-size: 12px; color: #6b7280; }
+    #prep-status.ok { color: #047857; }
+    #prep-status.err { color: #b91c1c; }
+    .label {
+      color: #6b7280;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin: 0;
+    }
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .panel {
+      min-width: 0;
+    }
+    .wide-panel {
+      margin-top: 14px;
+    }
+    .transcript-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      width: min(460px, 92vw);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      padding: 20px;
+      box-sizing: border-box;
+      background: #ffffff;
+      border-left: 1px solid #d8dee8;
+      box-shadow: -18px 0 44px rgba(15, 23, 42, 0.18);
+      transform: translateX(100%);
+      transition: transform 160ms ease;
+    }
+    .transcript-panel.open {
+      transform: translateX(0);
+    }
+    .transcript-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .transcript-header h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+    #transcript {
+      min-height: 0;
+      max-height: none;
+      height: 100%;
+    }
+    #currentQuestion,
+    #currentExchange,
+    #finalReport {
+      max-height: 220px;
+    }
+    @media (max-width: 1120px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      #avatar {
+        min-height: auto;
+      }
+      #avatar-stage {
+        width: min(calc((70vh - 48px) * 9 / 16), 100%);
+        max-height: calc(70vh - 48px);
+      }
+      #interview-panel {
+        min-height: auto;
+        border-left: 0;
+        border-top: 1px solid #d8dee8;
+      }
+    }
+    @media (max-width: 560px) {
+      .panel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section id="avatar">
+      <div id="avatar-stage"></div>
+    </section>
+    <aside id="interview-panel">
+      <h1>Interview</h1>
+      <section class="prep-panel">
+        <h2>面试准备</h2>
+        <p class="prep-sub">填写岗位与 JD、上传简历 — 面试官提问、追问和评估都会参考这些资料。保存后点 Connect 开始面试即生效。</p>
+        <div class="prep-field">
+          <label for="prep-role">岗位名称</label>
+          <input type="text" id="prep-role" placeholder="如：Python 后端工程师">
+        </div>
+        <div class="prep-field">
+          <label for="prep-jd">岗位 JD</label>
+          <textarea id="prep-jd" rows="3" placeholder="粘贴职位描述（职责、要求）…"></textarea>
+        </div>
+        <div class="prep-field">
+          <label for="prep-resume-file">简历（PDF / Word / 文本文件）</label>
+          <div class="prep-file-row">
+            <input type="file" id="prep-resume-file" accept=".pdf,.docx,.txt,.md">
+          </div>
+        </div>
+        <div class="prep-field">
+          <label for="prep-resume-text">或直接粘贴简历文本（上传了文件则以文件为准）</label>
+          <textarea id="prep-resume-text" rows="3" placeholder="粘贴简历内容（可选）…"></textarea>
+        </div>
+        <div class="prep-actions">
+          <button class="primary" id="prep-save" type="button">保存面试档案</button>
+          <span id="prep-status"></span>
+        </div>
+      </section>
+      <div class="controls">
+        <button class="primary" id="connect">Connect</button>
+        <button id="disconnect">Disconnect</button>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+        <button id="transcript-toggle" type="button" aria-expanded="false">Transcript</button>
+        <button
+          class="icon-button"
+          id="audio-input-toggle"
+          type="button"
+          aria-label="Audio input"
+          aria-pressed="true"
+          title="Audio input"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <path d="M12 19v3"></path>
+            <path d="M8 22h8"></path>
+            <path class="slash" d="M4 4l16 16"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="panel-grid">
+        <section class="panel">
+          <p class="label">Connection</p>
+          <pre id="connection">idle</pre>
+        </section>
+        <section class="panel">
+          <p class="label">State</p>
+          <pre id="state">idle</pre>
+        </section>
+        <section class="panel">
+          <p class="label">Guidance</p>
+          <pre id="guidance"></pre>
+        </section>
+        <section class="panel">
+          <p class="label">Progress</p>
+          <pre id="progress"></pre>
+        </section>
+      </div>
+      <section class="wide-panel">
+        <p class="label">Current Question</p>
+        <pre id="currentQuestion"></pre>
+      </section>
+      <section class="wide-panel">
+        <p class="label">Latest Exchange</p>
+        <pre id="currentExchange"></pre>
+      </section>
+      <section class="wide-panel">
+        <p class="label">Final Report</p>
+        <pre id="finalReport"></pre>
+      </section>
+    </aside>
+  </main>
+  <section class="transcript-panel" id="transcript-drawer" aria-hidden="true">
+    <div class="transcript-header">
+      <h2>Transcript</h2>
+      <button id="transcript-close" type="button">Close</button>
+    </div>
+    <pre id="transcript"></pre>
+  </section>
+  <script src="./sdk.js"></script>
+  <script>
+    let pollTimer = null;
+    let client = null;
+    let interviewStarted = false;
+    let audioInputEnabled = false;
+    let microphoneStarted = false;
+    let transcriptOpen = false;
+
+    function setConnection(text) {
+      document.getElementById("connection").textContent = text;
+    }
+
+    function updateAudioInputButton() {
+      const button = document.getElementById("audio-input-toggle");
+      button.setAttribute("aria-pressed", String(audioInputEnabled));
+      button.setAttribute("title", audioInputEnabled ? "Audio input on" : "Audio input off");
+      button.setAttribute("aria-label", audioInputEnabled ? "Audio input on" : "Audio input off");
+    }
+
+    async function applyAudioInputState() {
+      if (!client) return;
+      if (audioInputEnabled) {
+        await ensureMicrophonePermission();
+      }
+      if (audioInputEnabled && !microphoneStarted) {
+        await setBackendAudioInput(true);
+        try {
+          await client.startAudioCapture();
+          microphoneStarted = true;
+        } catch (err) {
+          await setBackendAudioInput(false);
+          throw err;
+        }
+      } else if (!audioInputEnabled) {
+        await stopAudioInput();
+      }
+      updateAudioInputButton();
+    }
+
+    async function stopAudioInput() {
+      if (!client) {
+        microphoneStarted = false;
+        await setBackendAudioInput(false);
+        return;
+      }
+      await setBackendAudioInput(false);
+      try {
+        if (typeof client.stopAudioCapture === "function") {
+          await client.stopAudioCapture();
+        } else if (typeof client.stopMicrophone === "function") {
+          await client.stopMicrophone();
+        }
+      } finally {
+        disableAudioInputTrack();
+        microphoneStarted = false;
+      }
+    }
+
+    async function setBackendAudioInput(enabled) {
+      const response = await fetch("/api/interview/audio-input", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || "audio input update failed");
+      }
+    }
+
+    function getMicrophoneTrack() {
+      if (!client || typeof client.getMicrophoneTrack !== "function") return null;
+      try {
+        return client.getMicrophoneTrack();
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function disableAudioInputTrack() {
+      const microphoneTrack = getMicrophoneTrack();
+      const mediaTrack =
+        microphoneTrack && (microphoneTrack.mediaStreamTrack || microphoneTrack.track || microphoneTrack);
+      if (!mediaTrack) return;
+      if ("enabled" in mediaTrack) mediaTrack.enabled = false;
+      if (typeof mediaTrack.stop === "function") mediaTrack.stop();
+    }
+
+    async function toggleAudioInput() {
+      audioInputEnabled = !audioInputEnabled;
+      updateAudioInputButton();
+      try {
+        await applyAudioInputState();
+      } catch (err) {
+        setConnection("audio input failed: " + (err && err.message ? err.message : String(err)));
+        console.error(err);
+      }
+    }
+
+    async function ensureMicrophonePermission() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (err) {
+        throw new Error("microphone permission denied");
+      }
+    }
+
+    async function post(path) {
+      const response = await fetch(path, { method: "POST" });
+      return response.json();
+    }
+
+    async function connectWithTimeout(activeClient, timeoutMs) {
+      return Promise.race([
+        activeClient.connect(),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("SDK connect timeout")), timeoutMs);
+        }),
+      ]);
+    }
+
+    async function ensureInterviewStarted() {
+      if (interviewStarted) return;
+      interviewStarted = true;
+      const data = await post("/api/interview/start");
+      if (!data.success) {
+        interviewStarted = false;
+        throw new Error(data.error || "interview start failed");
+      }
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(refreshStatus, 1000);
+      await refreshStatus();
+    }
+
+    async function startInterviewAfterConnect() {
+      try {
+        await ensureInterviewStarted();
+      } catch (err) {
+        setConnection("interview start failed: " + (err && err.message ? err.message : String(err)));
+        console.error(err);
+      }
+    }
+
+    async function startAudioInputAfterConnect() {
+      try {
+        await applyAudioInputState();
+      } catch (err) {
+        setConnection("audio input failed: " + (err && err.message ? err.message : String(err)));
+        console.error(err);
+      }
+    }
+
+    async function refreshStatus() {
+      const response = await fetch("/api/interview/status");
+      const status = await response.json();
+      document.getElementById("state").textContent = status.state || "idle";
+      document.getElementById("guidance").textContent = status.candidateMessage || "";
+      document.getElementById("progress").textContent =
+        (status.progressPercent || 0) + "% (" +
+        (status.questionsCompleted || 0) + "/" + (status.totalQuestions || 0) + ")";
+      document.getElementById("currentQuestion").textContent =
+        JSON.stringify(status.currentQuestion || {}, null, 2);
+      document.getElementById("currentExchange").textContent =
+        JSON.stringify(status.currentExchange || {}, null, 2);
+      document.getElementById("finalReport").textContent =
+        JSON.stringify(status.finalReport || {}, null, 2);
+      document.getElementById("transcript").textContent =
+        JSON.stringify(status.transcript || [], null, 2);
+    }
+
+    function setTranscriptOpen(open) {
+      transcriptOpen = open;
+      const drawer = document.getElementById("transcript-drawer");
+      const toggle = document.getElementById("transcript-toggle");
+      drawer.classList.toggle("open", transcriptOpen);
+      drawer.setAttribute("aria-hidden", transcriptOpen ? "false" : "true");
+      toggle.setAttribute("aria-expanded", String(transcriptOpen));
+    }
+
+    document.getElementById("connect").onclick = async () => {
+      try {
+        setConnection("starting session");
+        interviewStarted = false;
+        const data = await post("/api/start-session");
+        if (!data.success) throw new Error(data.error || "start-session failed");
+        const container = document.getElementById("avatar-stage");
+        container.innerHTML = "";
+        client = LivekitSDK.createClient({
+          connectConfig: {
+            type: "direct",
+            config: { sfuUrl: data.sfuUrl, userToken: data.userToken },
+          },
+          video: { containerElement: container, fitMode: "contain" },
+          audio: {
+            output: { enabled: true, volume: 1.0, muted: false },
+            input: {
+              noiseSuppression: true,
+              voiceIsolation: true,
+              sampleRate: 24000,
+              constraints: {
+                echoCancellation: true,
+                autoGainControl: true,
+              },
+            },
+          },
+        });
+        client.events.on("sdk:connected", async () => {
+          setConnection("connected");
+          await startInterviewAfterConnect();
+        });
+        client.events.on("sdk:disconnected", (info) => {
+          setConnection("disconnected" + (info && info.reason ? ": " + info.reason : ""));
+          interviewStarted = false;
+          microphoneStarted = false;
+        });
+        client.events.on("sdk:error", (info) => {
+          setConnection("sdk error: " + (info && info.message ? info.message : JSON.stringify(info)));
+          console.error("SDK error:", info);
+        });
+        setConnection("connecting sdk");
+        await connectWithTimeout(client, 15000);
+        if (client.isMuted) client.unmute();
+        await startInterviewAfterConnect();
+      } catch (err) {
+        setConnection("error: " + (err && err.message ? err.message : String(err)));
+        console.error(err);
+        await refreshStatus();
+      }
+    };
+    document.getElementById("disconnect").onclick = async () => {
+      if (client) {
+        try { await client.disconnect(); } catch (err) {}
+        client = null;
+      }
+      await post("/api/stop-session");
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = null;
+      interviewStarted = false;
+      microphoneStarted = false;
+      setConnection("disconnected");
+      await refreshStatus();
+    };
+    document.getElementById("audio-input-toggle").onclick = toggleAudioInput;
+    document.getElementById("transcript-toggle").onclick = () => setTranscriptOpen(!transcriptOpen);
+    document.getElementById("transcript-close").onclick = () => setTranscriptOpen(false);
+    document.getElementById("start").onclick = async () => {
+      try {
+        await ensureInterviewStarted();
+      } catch (err) {
+        setConnection("interview start failed: " + (err && err.message ? err.message : String(err)));
+        console.error(err);
+      }
+    };
+    document.getElementById("stop").onclick = async () => {
+      await post("/api/interview/stop");
+      interviewStarted = false;
+      await refreshStatus();
+    };
+
+    function setPrepStatus(text, cls) {
+      const el = document.getElementById("prep-status");
+      el.textContent = text;
+      el.className = cls || "";
+    }
+
+    async function loadProfile() {
+      try {
+        const response = await fetch("/api/interview/profile");
+        const profile = await response.json();
+        document.getElementById("prep-role").value = profile.target_role || "";
+        const parts = [];
+        if (profile.jd_chars) parts.push("JD " + profile.jd_chars + " 字");
+        if (profile.resume_chars) parts.push("简历 " + profile.resume_chars + " 字");
+        setPrepStatus(parts.length ? "已有档案：" + parts.join("，") : "尚未配置 JD 和简历", "");
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function saveProfile() {
+      const button = document.getElementById("prep-save");
+      button.disabled = true;
+      setPrepStatus("保存中…", "");
+      try {
+        const form = new FormData();
+        form.append("target_role", document.getElementById("prep-role").value);
+        form.append("jd_text", document.getElementById("prep-jd").value);
+        form.append("resume_text", document.getElementById("prep-resume-text").value);
+        const fileInput = document.getElementById("prep-resume-file");
+        if (fileInput.files.length > 0) {
+          form.append("resume_file", fileInput.files[0]);
+        }
+        const response = await fetch("/api/interview/profile", { method: "POST", body: form });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || "HTTP " + response.status);
+        document.getElementById("prep-jd").value = "";
+        document.getElementById("prep-resume-text").value = "";
+        fileInput.value = "";
+        document.getElementById("prep-role").value = data.target_role || "";
+        const parts = [];
+        if (data.jd_chars) parts.push("JD " + data.jd_chars + " 字");
+        if (data.resume_chars) parts.push("简历 " + data.resume_chars + " 字");
+        setPrepStatus("✅ 已保存" + (parts.length ? "（" + parts.join("，") + "）" : "") + " — 点击 Connect 开始面试", "ok");
+      } catch (err) {
+        setPrepStatus("保存失败：" + (err && err.message ? err.message : String(err)), "err");
+      } finally {
+        button.disabled = false;
+      }
+    }
+    document.getElementById("prep-save").onclick = saveProfile;
+
+    refreshStatus();
+    updateAudioInputButton();
+    setTranscriptOpen(false);
+    loadProfile();
+  </script>
+</body>
+</html>
