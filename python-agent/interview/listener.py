@@ -17,6 +17,9 @@ class InterviewListener(AgentListener):
         self._asr_partial_seq = 0
         self._accepted_speech = False
         self.audio_input_enabled = False
+        # scene.ready is a one-shot platform event. With session preheat the
+        # interview may start minutes later, so remember it for replay.
+        self.scene_ready_seen = False
 
     def set_controller(self, controller) -> None:
         self.controller = controller
@@ -31,6 +34,7 @@ class InterviewListener(AgentListener):
             await self.controller.notify_platform_idle()
 
     async def on_scene_ready(self) -> None:
+        self.scene_ready_seen = True
         if self.controller is not None:
             await self.controller.mark_scene_ready()
 
@@ -100,6 +104,19 @@ class InterviewListener(AgentListener):
         await self.controller.handle_answer(request_id, transcript)
         self._accepted_speech = False
         self._voice_request_id = None
+
+    async def on_text_input(self, text: str, request_id: str) -> None:
+        """Candidate answered by typing (platform Data Channel → input.text)."""
+        if self.controller is None or not self._can_accept_speech():
+            return
+        answer = text.strip()
+        if not answer:
+            return
+        # Drop any in-flight voice capture so a late ASR final can't submit a
+        # second answer for the same exchange.
+        self._accepted_speech = False
+        self._voice_request_id = None
+        await self.controller.handle_answer(request_id, answer)
 
     def _can_accept_speech(self) -> bool:
         return (

@@ -1,87 +1,83 @@
+"""Static anchors for the candidate-facing interview page (html + js)."""
+
 from pathlib import Path
 
 
-FRONTEND_HTML = Path(__file__).parents[3] / "frontend" / "interview.html"
+FRONTEND = Path(__file__).parents[3] / "frontend"
+FRONTEND_HTML = FRONTEND / "interview.html"
+FRONTEND_JS = FRONTEND / "interview.js"
 
 
-def test_interview_frontend_uses_interview_routes():
-    html = FRONTEND_HTML.read_text(encoding="utf-8")
+def _html() -> str:
+    return FRONTEND_HTML.read_text(encoding="utf-8")
 
+
+def _js() -> str:
+    return FRONTEND_JS.read_text(encoding="utf-8")
+
+
+def test_page_has_four_views_and_loads_external_script():
+    html = _html()
+    for view_id in ("view-prep", "view-connecting", "view-interview", "view-finished"):
+        assert f'id="{view_id}"' in html, view_id
+    assert 'data-view="prep"' in html  # landing view is prep
     assert "./sdk.js" in html
-    assert "LivekitSDK.createClient" in html
-    assert "/api/start-session" in html
-    assert "/api/interview/status" in html
-    assert "/api/interview/start" in html
-    assert "/api/interview/audio-input" in html
-    assert "ensureInterviewStarted" in html
-    assert "currentQuestion" in html
-    assert "finalReport" in html
-    assert "candidateMessage" in html
-    assert "progressPercent" in html
-    assert "transcript" in html
+    assert "/interview.js" in html
+    # dev-console leftovers must not exist on the candidate page
+    for legacy in ('id="connect"', 'id="disconnect"', "transcript-drawer"):
+        assert legacy not in html, legacy
 
 
-def test_interview_frontend_exposes_sdk_connection_failures():
-    html = FRONTEND_HTML.read_text(encoding="utf-8")
-
-    assert "connection" in html
-    assert "sdk:connected" in html
-    assert "sdk:disconnected" in html
-    assert "sdk:error" in html
-    assert "connectWithTimeout" in html
-    assert "SDK connect timeout" in html
+def test_prep_view_keeps_profile_intake_fields():
+    html = _html()
+    for field_id in ("prep-role", "prep-jd", "prep-resume-file", "prep-resume-text"):
+        assert f'id="{field_id}"' in html, field_id
+    assert 'id="start-btn"' in html
+    assert 'id="readiness"' in html
 
 
-def test_interview_frontend_uses_portrait_video_stage():
-    html = FRONTEND_HTML.read_text(encoding="utf-8")
-
+def test_interview_view_layout_anchors():
+    html = _html()
     assert 'id="avatar-stage"' in html
     assert "aspect-ratio: 9 / 16" in html
-    assert 'document.getElementById("avatar-stage")' in html
-    assert "video: { containerElement: container" in html
-    assert 'id="avatar"' in html
+    assert 'id="chat-log"' in html
+    assert 'id="progress-fill"' in html
+    assert 'id="state-pill"' in html
+    assert 'id="end-btn"' in html
+    # composer supports both input modes
+    for anchor in ("mode-voice", "mode-text", "mic-btn", "answer-input", "send-btn"):
+        assert f'id="{anchor}"' in html, anchor
 
 
-def test_interview_frontend_has_audio_input_toggle():
-    html = FRONTEND_HTML.read_text(encoding="utf-8")
-
-    assert 'id="audio-input-toggle"' in html
-    assert "toggleAudioInput" in html
-    assert "stopAudioInput" in html
-    assert "startAudioCapture" in html
-    assert "stopAudioCapture" in html
-    assert "} else if (!audioInputEnabled) {\n        await stopAudioInput();" in html
-    assert "startMicrophone" not in html
-    assert "stopMicrophone" in html
-    assert "aria-pressed" in html
-    assert "getUserMedia" in html
-    assert "disableAudioInputTrack" in html
-    assert "getMicrophoneTrack" in html
-    assert "let audioInputEnabled = false;" in html
-    assert "setBackendAudioInput" in html
+def test_js_preheats_session_and_cleans_up():
+    js = _js()
+    assert "preheat()" in js
+    assert "/api/start-session" in js
+    assert "sendBeacon" in js
+    assert "IDLE_RELEASE_MS" in js
+    assert "/api/interview/start" in js
+    assert "/api/interview/status" in js
 
 
-def test_interview_frontend_uses_collapsible_transcript_drawer():
-    html = FRONTEND_HTML.read_text(encoding="utf-8")
-    interview_panel = html[html.index('<aside id="interview-panel"'):html.index("</aside>")]
-
-    assert 'id="transcript-drawer"' in html
-    assert 'aria-hidden="true"' in html
-    assert 'id="transcript-toggle"' in html
-    assert "setTranscriptOpen(false)" in html
-    assert 'id="transcript"' not in interview_panel
-
-
-def test_interview_frontend_does_not_report_audio_capture_as_start_failure():
-    html = FRONTEND_HTML.read_text(encoding="utf-8")
-
-    assert "startInterviewAfterConnect" in html
-    assert "startAudioInputAfterConnect" in html
-    assert "audio input failed: " in html
-    assert "await applyAudioInputState();\n            await ensureInterviewStarted();" not in html
+def test_js_supports_voice_and_text_answers():
+    js = _js()
+    assert "sendTextQuestion" in js
+    assert "startAudioCapture" in js
+    assert "stopAudioCapture" in js
+    assert "conversation:asr:chunk" in js
+    assert "getMicrophoneAudioLevel" in js
+    assert "asrAvailable" in js
+    # dead private-API calls from the old page must stay gone
+    assert "getMicrophoneTrack" not in js
+    assert "stopMicrophone" not in js
 
 
-def test_interview_frontend_does_not_restart_audio_when_toggle_is_off():
-    html = FRONTEND_HTML.read_text(encoding="utf-8")
-
-    assert "await startAudioInputAfterConnect();" not in html
+def test_js_maps_platform_errors_and_debug_mode():
+    js = _js()
+    assert "mapPlatformError" in js
+    for code in ("40003", "40004", "40006"):
+        assert code in js, code
+    assert "debug" in js
+    assert "FIXTURE_STATUS" in js
+    assert "finalReport" in js
+    assert "candidateMessage" in js

@@ -1,4 +1,5 @@
 from interview import agent as interview_agent
+from interview.models import InterviewState
 
 
 class Closable:
@@ -144,6 +145,91 @@ async def test_terminal_callback_keeps_final_status_after_releasing_resources():
     assert resp.text == '{"state": "completed", "finalReport": {"summary": "ok"}}'
     assert interview_agent._controller is None
     assert interview_agent._agent is None
+
+
+async def test_interview_js_handler_disables_browser_cache():
+    resp = await interview_agent.handle_interview_js(None)
+
+    assert resp.headers["Cache-Control"] == "no-store"
+
+
+def test_session_exposes_asr_availability():
+    source = interview_agent.Path(interview_agent.__file__).read_text(encoding="utf-8")
+
+    assert source.count('"asrAvailable"') >= 2  # start-session response + session-info
+
+
+class IdleController:
+    def __init__(self):
+        self.state = InterviewState.IDLE
+        self.started = False
+        self.scene_ready_replayed = False
+
+    async def start(self):
+        self.started = True
+
+    async def mark_scene_ready(self):
+        self.scene_ready_replayed = True
+
+    def get_status(self):
+        return {"state": self.state.value}
+
+
+class RunningController(IdleController):
+    def __init__(self):
+        super().__init__()
+        self.state = InterviewState.LISTENING
+
+
+async def test_interview_start_rebuilds_idle_controller_for_fresh_config():
+    await interview_agent.stop_interview_session()
+    stale = IdleController()
+    listener = interview_agent.InterviewListener()
+    interview_agent._agent = Closable()
+    interview_agent._listener = listener
+    interview_agent._controller = stale
+
+    class Request:
+        pass
+
+    resp = await interview_agent.handle_interview_start(Request())
+
+    assert resp.status == 200
+    # A preheated (idle) session must reload config saved after preheat.
+    assert interview_agent._controller is not stale
+    assert listener.controller is interview_agent._controller
+    await interview_agent.stop_interview_session()
+
+
+async def test_interview_start_keeps_running_controller():
+    await interview_agent.stop_interview_session()
+    running = RunningController()
+    interview_agent._agent = Closable()
+    interview_agent._listener = interview_agent.InterviewListener()
+    interview_agent._controller = running
+
+    resp = await interview_agent.handle_interview_start(None)
+
+    assert resp.status == 200
+    assert interview_agent._controller is running
+    assert running.started is True
+    await interview_agent.stop_interview_session()
+
+
+async def test_interview_start_replays_scene_ready_seen_during_preheat():
+    await interview_agent.stop_interview_session()
+    running = RunningController()
+    listener = interview_agent.InterviewListener()
+    await listener.on_scene_ready()  # arrived during preheat, no controller yet
+    interview_agent._agent = Closable()
+    interview_agent._listener = listener
+    interview_agent._controller = running
+
+    await interview_agent.handle_interview_start(None)
+
+    assert listener.scene_ready_seen is True
+    assert running.scene_ready_replayed is True
+    await interview_agent.stop_interview_session()
 
 
 async def test_interview_stop_route_releases_session_resources():

@@ -202,6 +202,7 @@ async def start_interview_session() -> tuple[str, str]:
         "userToken": result.user_token,
         "sfuUrl": result.sfu_url,
         "sessionId": result.session_id,
+        "asrAvailable": _asr_manager is not None,
     }
     logger.info(
         "startup timing: asr_connect_ms=%s avatar_start_ms=%s "
@@ -256,6 +257,10 @@ async def handle_index(request: web.Request) -> web.Response:
     return web.FileResponse(FRONTEND / "interview.html", headers=NO_STORE_HEADERS)
 
 
+async def handle_interview_js(request: web.Request) -> web.Response:
+    return web.FileResponse(FRONTEND / "interview.js", headers=NO_STORE_HEADERS)
+
+
 async def handle_sdk_js(request: web.Request) -> web.Response:
     js_path = (
         FRONTEND
@@ -283,6 +288,7 @@ async def handle_start_session(request: web.Request) -> web.Response:
                 "userToken": user_token,
                 "sfuUrl": sfu_url,
                 "sessionId": _session_info.get("sessionId", ""),
+                "asrAvailable": _session_info.get("asrAvailable", False),
             }
         )
     except Exception as exc:
@@ -300,9 +306,20 @@ async def handle_session_info(request: web.Request) -> web.Response:
 
 
 async def handle_interview_start(request: web.Request) -> web.Response:
-    if _controller is None:
+    global _controller
+    if _controller is None or _agent is None:
         return json_response({"success": False, "error": "No active session"}, status=400)
+    if _controller.state == InterviewState.IDLE:
+        # The session may have been preheated before the candidate saved their
+        # profile — rebuild so the controller reads the freshest config/YAML.
+        _controller = build_controller(_agent)
+        if _listener is not None:
+            _listener.set_controller(_controller)
     await _controller.start()
+    # scene.ready fires once, typically during preheat before the interview
+    # starts — replay it so the (possibly rebuilt) controller can open.
+    if _listener is not None and getattr(_listener, "scene_ready_seen", False):
+        await _controller.mark_scene_ready()
     return json_response({"success": True, "status": _controller.get_status()})
 
 
@@ -368,6 +385,7 @@ async def create_app() -> web.Application:
     # client_max_size covers resume uploads (PDF/Word up to 10 MB).
     app = web.Application(client_max_size=10 * 1024 * 1024)
     app.router.add_get("/", handle_index)
+    app.router.add_get("/interview.js", handle_interview_js)
     app.router.add_get("/sdk.js", handle_sdk_js)
     app.router.add_post("/api/start-session", handle_start_session)
     app.router.add_post("/api/stop-session", handle_stop_session)
