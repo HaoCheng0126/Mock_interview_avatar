@@ -142,6 +142,24 @@ async def get_config_handler(request: web.Request) -> web.Response:
     return web.json_response(mask_settings(load_settings()))
 
 
+async def _apply_config_to_running_agents(settings: dict) -> dict:
+    """Restart hub-managed running agents so the just-saved config takes effect
+    immediately (agents read credentials from their startup env). Externally
+    started agents can't be restarted by the hub — flag them for the UI."""
+    restarted, external = [], []
+    for name, managed in _managed.items():
+        if managed.is_running:
+            await managed.stop()
+            try:
+                await managed.start(settings)
+                restarted.append(name)
+            except Exception as e:
+                logger.warning("restart %s after config save failed: %s", name, e)
+        elif await _port_in_use(_agent_port(settings, name)):
+            external.append(name)
+    return {"restarted": restarted, "external": external}
+
+
 async def post_config_handler(request: web.Request) -> web.Response:
     try:
         incoming = await request.json()
@@ -149,7 +167,10 @@ async def post_config_handler(request: web.Request) -> web.Response:
     except ValueError as e:
         return web.json_response({"success": False, "error": str(e)}, status=400)
     save_settings(updated)
-    return web.json_response({"success": True, "config": mask_settings(updated)})
+    effect = await _apply_config_to_running_agents(updated)
+    return web.json_response(
+        {"success": True, "config": mask_settings(updated), **effect}
+    )
 
 
 async def agents_status_handler(request: web.Request) -> web.Response:

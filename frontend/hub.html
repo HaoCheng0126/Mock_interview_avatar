@@ -293,7 +293,7 @@
             <div class="field">
               <label for="asr-volc_cluster">Cluster</label>
               <input id="asr-volc_cluster" class="mono" spellcheck="false" placeholder="volcengine_streaming_common">
-              <div class="note">从控制台「服务详情」原样复制；粤语/川渝为不同集群</div>
+              <div class="note">集群标识（如 volcengine_streaming_common），不是实例 ID/名称；粤语/川渝为不同集群</div>
             </div>
           </div>
           <div class="field">
@@ -460,7 +460,11 @@ async function saveConfig() {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || res.status);
-    toast("✅ 配置已保存 — 重启 agent 后生效");
+    let msg = "✅ 配置已保存";
+    if (data.restarted?.length) msg += ` — 已重启 ${data.restarted.join("、")} 使新配置生效`;
+    else if (data.external?.length) msg += ` — ⚠️ ${data.external.join("、")} 在 hub 外运行，需手动重启才生效`;
+    else msg += " — 启动 agent 后生效";
+    toast(msg);
     await loadConfig();
     await refreshAgents();
   } catch (e) {
