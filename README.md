@@ -5,7 +5,7 @@
 ## 功能
 
 - **数字人面试官** — LiveAvatar 视频渲染 + 平台 TTS 播报，支持 9:16 竖屏
-- **实时语音识别** — DashScope Qwen ASR 流式转写（未配置时自动降级为平台 ASR）
+- **实时语音识别** — DashScope Qwen ASR 流式转写（WebSocket Agent 模式下 ASR 由开发者侧提供；未配置时仅支持文本作答）
 - **结构化面试流程** — 题库顺序出题、答后 LLM 判定追问（每题可设上限）、思考提醒、超时跳题、连续无效作答提前终止
 - **LLM 评估管线** — 回答后台评估、追问判定、终局多维度报告（评分/证据/建议/置信度）
 - **面试准备入口** — 面试页直接填岗位名称、粘贴 JD、上传简历（PDF / Word / 文本），面试官提问、追问、评估、报告全程参考
@@ -71,10 +71,15 @@ cd ../python-agent && python hub/hub.py
 | `LIVEAVATAR_API_KEY` | 是 | LiveAvatar 平台 Key（数字人视频/TTS） |
 | `LIVEAVATAR_AVATAR_ID` | 是 | 数字人形象 ID |
 | `DEEPSEEK_API_KEY` | 是 | LLM Key（评估/追问/报告；OpenAI 兼容接口均可） |
-| `DASHSCOPE_API_KEY` | 否 | Qwen 实时 ASR；留空降级为平台 ASR |
+| `DASHSCOPE_API_KEY` | 语音必需 | Qwen 实时 ASR；WebSocket Agent 模式无平台 ASR 兜底，留空则仅能文本作答 |
+| `LIVEAVATAR_BASE_URL` | 否 | 默认 `https://facemarket.ai/vih/dispatcher`（与官方指南一致） |
+| `LIVEAVATAR_SANDBOX` | 否 | `true` 时路由到沙箱环境（每月 30 分钟免费额度） |
 | `LIVEAVATAR_VOICE_ID` | 否 | 覆盖形象默认音色 |
+| `LIVEAVATAR_VOICE_SPEED` | 否 | 平台 TTS 语速 0.5–2.0，留空用默认 |
 | `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL` | 否 | 默认 `https://api.deepseek.com` / `deepseek-v4-flash` |
 | `INTERVIEW_HTTP_PORT` / `HUB_PORT` | 否 | 默认 8083 / 8000 |
+
+> ⚠️ **平台 TTS 前提**：本项目走「回传文本、平台合成语音」链路（`ttsProvider=platform`）。数字人需在 LiveAvatar 控制台开启平台 TTS 并配置音色（ttsProviderId / voiceId / fallbackVoiceId），否则文本回复不会驱动数字人说话（控制台默认为 `developer`，即开发者自行合成音频）。
 
 完整模板见 [python-agent/.env.example](python-agent/.env.example)。通过 Hub 控制台配置时无需手动导出，凭证保存在本地 `python-agent/config/hub_settings.json`（权限 600，已 gitignore）。
 

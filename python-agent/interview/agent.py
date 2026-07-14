@@ -36,9 +36,10 @@ FRONTEND = HERE.parent.parent / "frontend"
 API_KEY = os.getenv("LIVEAVATAR_API_KEY", "")
 AVATAR_ID = os.getenv("LIVEAVATAR_AVATAR_ID", "")
 BASE_URL = os.getenv(
-    "LIVEAVATAR_BASE_URL", "https://liveavatar.aimiai.com/vih/dispatcher"
+    "LIVEAVATAR_BASE_URL", "https://facemarket.ai/vih/dispatcher"
 )
 VOICE_ID = os.getenv("LIVEAVATAR_VOICE_ID", None)
+SANDBOX = os.getenv("LIVEAVATAR_SANDBOX", "").strip().lower() in {"1", "true", "yes", "on"}
 HTTP_PORT = int(os.getenv("INTERVIEW_HTTP_PORT", "8083"))
 
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
@@ -140,14 +141,30 @@ async def start_interview_session() -> tuple[str, str]:
             on_interim=_listener._on_asr_interim,
         )
         _listener.asr_manager = _asr_manager
+    else:
+        # WebSocket Agent 模式下 ASR 始终由开发者提供（见官方接入指南），
+        # 平台侧没有 ASR 兜底 — 缺少 DashScope Key 时语音作答不可用。
+        logger.warning(
+            "DASHSCOPE_API_KEY 未配置 — 语音作答不可用，候选人仅能通过文本输入回答"
+        )
+
+    voice_config = None
+    voice_speed_raw = os.getenv("LIVEAVATAR_VOICE_SPEED", "").strip()
+    if voice_speed_raw:
+        try:
+            voice_config = {"speed": float(voice_speed_raw)}
+        except ValueError:
+            logger.warning("LIVEAVATAR_VOICE_SPEED 不是数字，已忽略: %r", voice_speed_raw)
 
     config = AvatarAgentConfig(
         api_key=API_KEY,
         avatar_id=AVATAR_ID,
         base_url=BASE_URL,
-        developer_asr=bool(DASHSCOPE_API_KEY),
+        sandbox=SANDBOX,
+        developer_asr=True,
         developer_tts=False,
         voice_id=VOICE_ID,
+        voice_config=voice_config,
         timeout=30.0,
     )
     _agent = AvatarAgent(config, _listener)

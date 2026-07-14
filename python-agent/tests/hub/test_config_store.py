@@ -49,6 +49,10 @@ SAMPLE = {
 def test_default_settings_has_all_sections():
     settings = default_settings()
     assert set(settings) >= {"platform", "llm", "asr", "agents"}
+    # official guide + SDK default endpoint
+    assert settings["platform"]["base_url"] == "https://facemarket.ai/vih/dispatcher"
+    assert settings["platform"]["sandbox"] == ""
+    assert settings["platform"]["voice_speed"] == ""
     assert settings["llm"]["base_url"] == "https://api.deepseek.com"
     assert settings["llm"]["model"] == "deepseek-v4-flash"
     for name in AGENTS:
@@ -191,9 +195,21 @@ def test_build_agent_env_omits_empty_values():
     env = build_agent_env(default_settings(), "interview")
     assert "LIVEAVATAR_API_KEY" not in env
     assert "LIVEAVATAR_VOICE_ID" not in env
+    assert "LIVEAVATAR_SANDBOX" not in env
+    assert "LIVEAVATAR_VOICE_SPEED" not in env
     assert "SYSTEM_PROMPT" not in env
     # non-empty defaults still pass through
     assert env["DEEPSEEK_BASE_URL"] == "https://api.deepseek.com"
+
+
+def test_build_agent_env_maps_sandbox_and_voice_speed():
+    settings = apply_update(
+        default_settings(),
+        {"platform": {"sandbox": "true", "voice_speed": "1.2"}},
+    )
+    env = build_agent_env(settings, "interview")
+    assert env["LIVEAVATAR_SANDBOX"] == "true"
+    assert env["LIVEAVATAR_VOICE_SPEED"] == "1.2"
 
 
 def test_build_agent_env_unknown_agent_raises():

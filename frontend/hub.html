@@ -73,7 +73,7 @@
     display: block; font-size: 11px; color: var(--text-dim);
     margin-bottom: 4px;
   }
-  .field input, .field textarea {
+  .field input, .field textarea, .field select {
     width: 100%;
     background: var(--bg);
     border: 1px solid var(--border);
@@ -84,6 +84,7 @@
     font-family: inherit;
     transition: border-color .15s;
   }
+  .field select { appearance: auto; }
   .field input.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .field textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
   .field input:focus, .field textarea:focus {
@@ -220,9 +221,23 @@
             <input id="platform-voice_id" class="mono" spellcheck="false" placeholder="留空用形象默认音色">
           </div>
         </div>
+        <div class="row2">
+          <div class="field">
+            <label for="platform-base_url">平台地址</label>
+            <input id="platform-base_url" class="mono" spellcheck="false" placeholder="https://facemarket.ai/vih/dispatcher">
+          </div>
+          <div class="field">
+            <label for="platform-sandbox">环境</label>
+            <select id="platform-sandbox">
+              <option value="">正式环境</option>
+              <option value="true">沙箱环境（每月 30 分钟免费额度）</option>
+            </select>
+          </div>
+        </div>
         <div class="field">
-          <label for="platform-base_url">平台地址</label>
-          <input id="platform-base_url" class="mono" spellcheck="false">
+          <label for="platform-voice_speed">语速（0.5–2.0，留空用默认）</label>
+          <input id="platform-voice_speed" class="mono" type="number" step="0.1" min="0.5" max="2" placeholder="1.0">
+          <div class="note">⚠️ 前提：数字人需在 LiveAvatar 控制台开启平台 TTS（ttsProvider=platform 并配置音色），否则文本回复不会驱动数字人说话</div>
         </div>
       </div>
     </div>
@@ -257,7 +272,7 @@
         <div class="field">
           <label for="asr-dashscope_api_key">DashScope API Key</label>
           <input id="asr-dashscope_api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
-          <div class="note">留空则自动降级为平台侧 ASR</div>
+          <div class="note">语音作答必需 — WebSocket Agent 模式下 ASR 由开发者侧提供，平台无兜底；未配置时候选人仅能文本输入</div>
         </div>
         <div class="field">
           <label for="asr-model">ASR 模型</label>
@@ -285,6 +300,7 @@
 const CONFIG_FIELDS = [
   ["platform", "api_key"], ["platform", "avatar_id"],
   ["platform", "voice_id"], ["platform", "base_url"],
+  ["platform", "sandbox"], ["platform", "voice_speed"],
   ["llm", "api_key"], ["llm", "base_url"], ["llm", "model"], ["llm", "system_prompt"],
   ["asr", "dashscope_api_key"], ["asr", "model"],
 ];
