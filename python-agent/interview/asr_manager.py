@@ -24,6 +24,26 @@ DASHSCOPE_ASR_URL = os.getenv(
 logger = logging.getLogger(__name__)
 
 
+async def probe_connection(
+    api_key: str,
+    model: str | None = None,
+    *,
+    url: str | None = None,
+    timeout: float = 10.0,
+) -> None:
+    """Verify a DashScope key by opening the realtime WS then closing it.
+    Raises on auth/connection failure; returns None on success."""
+    conversation = OmniRealtimeConversation(
+        model=model or DASHSCOPE_ASR_MODEL,
+        url=url or DASHSCOPE_ASR_URL,
+        api_key=api_key,
+        callback=OmniRealtimeCallback(),
+    )
+    loop = asyncio.get_running_loop()
+    await asyncio.wait_for(loop.run_in_executor(None, conversation.connect), timeout=timeout)
+    await loop.run_in_executor(None, conversation.close)
+
+
 class QwenAsrManager:
     def __init__(
         self,

@@ -29,11 +29,15 @@ SAMPLE = {
         "api_key": "sk-test-llm-5678",
         "base_url": "https://api.example.com",
         "model": "test-model",
-        "system_prompt": "你是测试助手",
     },
     "asr": {
+        "provider": "volcengine",
         "dashscope_api_key": "sk-test-asr-9012",
         "model": "qwen3-asr-flash-realtime",
+        "volc_app_id": "app-test-1234",
+        "volc_access_token": "tok-test-5678",
+        "volc_secret_key": "sec-test-9012",
+        "volc_cluster": "volcengine_streaming_common",
     },
     "agents": {
         "interview": {"port": 8083},
@@ -83,7 +87,7 @@ def test_save_then_load_roundtrip(tmp_path):
     path = tmp_path / "s.json"
     save_settings(SAMPLE, path)
     assert load_settings(path)["platform"]["api_key"] == "lk_test_abcd1234"
-    assert load_settings(path)["llm"]["system_prompt"] == "你是测试助手"
+    assert load_settings(path)["asr"]["volc_app_id"] == "app-test-1234"
 
 
 def test_save_settings_drops_unknown_keys(tmp_path):
@@ -112,6 +116,9 @@ def test_mask_settings_hides_secrets_keeps_rest():
     assert masked["platform"]["api_key"] == MASK_PREFIX + "1234"
     assert masked["llm"]["api_key"] == MASK_PREFIX + "5678"
     assert masked["asr"]["dashscope_api_key"] == MASK_PREFIX + "9012"
+    assert masked["asr"]["volc_access_token"] == MASK_PREFIX + "5678"
+    assert masked["asr"]["volc_secret_key"] == MASK_PREFIX + "9012"
+    assert masked["asr"]["volc_app_id"] == "app-test-1234"  # app id not secret
     assert masked["platform"]["avatar_id"] == "avatar_test_001"
     assert masked["llm"]["model"] == "test-model"
     # original untouched (immutability)
@@ -177,9 +184,13 @@ def test_build_agent_env_maps_settings_to_env_vars():
     assert env["DEEPSEEK_API_KEY"] == "sk-test-llm-5678"
     assert env["DEEPSEEK_BASE_URL"] == "https://api.example.com"
     assert env["DEEPSEEK_MODEL"] == "test-model"
-    assert env["SYSTEM_PROMPT"] == "你是测试助手"
+    assert "SYSTEM_PROMPT" not in env  # dropped: interview persona comes from YAML
+    assert env["ASR_PROVIDER"] == "volcengine"
     assert env["DASHSCOPE_API_KEY"] == "sk-test-asr-9012"
     assert env["DASHSCOPE_ASR_MODEL"] == "qwen3-asr-flash-realtime"
+    assert env["VOLC_ASR_APP_ID"] == "app-test-1234"
+    assert env["VOLC_ASR_ACCESS_TOKEN"] == "tok-test-5678"
+    assert env["VOLC_ASR_CLUSTER"] == "volcengine_streaming_common"
     assert env["INTERVIEW_HTTP_PORT"] == "8083"
 
 
@@ -197,9 +208,10 @@ def test_build_agent_env_omits_empty_values():
     assert "LIVEAVATAR_VOICE_ID" not in env
     assert "LIVEAVATAR_SANDBOX" not in env
     assert "LIVEAVATAR_VOICE_SPEED" not in env
-    assert "SYSTEM_PROMPT" not in env
+    assert "VOLC_ASR_APP_ID" not in env  # empty volc creds omitted
     # non-empty defaults still pass through
     assert env["DEEPSEEK_BASE_URL"] == "https://api.deepseek.com"
+    assert env["ASR_PROVIDER"] == "dashscope"  # default provider always present
 
 
 def test_build_agent_env_maps_sandbox_and_voice_speed():

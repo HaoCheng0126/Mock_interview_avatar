@@ -38,7 +38,12 @@ SECRET_FIELDS = {
     ("platform", "api_key"),
     ("llm", "api_key"),
     ("asr", "dashscope_api_key"),
+    ("asr", "volc_access_token"),
+    ("asr", "volc_secret_key"),
 }
+
+# ASR providers selectable in the console.
+ASR_PROVIDERS = ("dashscope", "volcengine")
 
 
 def default_settings() -> dict[str, Any]:
@@ -55,11 +60,17 @@ def default_settings() -> dict[str, Any]:
             "api_key": "",
             "base_url": "https://api.deepseek.com",
             "model": "deepseek-v4-flash",
-            "system_prompt": "",
         },
         "asr": {
+            "provider": "dashscope",
+            # DashScope Qwen
             "dashscope_api_key": "",
             "model": "qwen3-asr-flash-realtime",
+            # Volcengine streaming ASR (豆包语音)
+            "volc_app_id": "",
+            "volc_access_token": "",
+            "volc_secret_key": "",
+            "volc_cluster": "volcengine_streaming_common",
         },
         "agents": {
             name: {"port": spec["default_port"]} for name, spec in AGENTS.items()
@@ -168,9 +179,13 @@ def build_agent_env(settings: dict[str, Any], agent_name: str) -> dict[str, str]
         "DEEPSEEK_API_KEY": llm["api_key"],
         "DEEPSEEK_BASE_URL": llm["base_url"],
         "DEEPSEEK_MODEL": llm["model"],
-        "SYSTEM_PROMPT": llm["system_prompt"],
+        "ASR_PROVIDER": asr.get("provider", "dashscope"),
         "DASHSCOPE_API_KEY": asr["dashscope_api_key"],
         "DASHSCOPE_ASR_MODEL": asr["model"],
+        "VOLC_ASR_APP_ID": asr.get("volc_app_id", ""),
+        "VOLC_ASR_ACCESS_TOKEN": asr.get("volc_access_token", ""),
+        "VOLC_ASR_SECRET_KEY": asr.get("volc_secret_key", ""),
+        "VOLC_ASR_CLUSTER": asr.get("volc_cluster", ""),
         spec["port_env"]: str(port),
     }
     return {k: v for k, v in candidates.items() if v}

@@ -5,12 +5,12 @@
 ## 功能
 
 - **数字人面试官** — LiveAvatar 视频渲染 + 平台 TTS 播报，支持 9:16 竖屏
-- **实时语音识别** — DashScope Qwen ASR 流式转写（WebSocket Agent 模式下 ASR 由开发者侧提供；未配置时仅支持文本作答）
+- **实时语音识别** — 火山引擎（豆包语音）或 DashScope Qwen，可在控制台切换；WebSocket Agent 模式下 ASR 由开发者侧提供，未配置时仅支持文本作答
 - **结构化面试流程** — 题库顺序出题、答后 LLM 判定追问（每题可设上限）、思考提醒、超时跳题、连续无效作答提前终止
 - **LLM 评估管线** — 回答后台评估、追问判定、终局多维度报告（评分/证据/建议/置信度）
 - **面试准备入口** — 面试页直接填岗位名称、粘贴 JD、上传简历（PDF / Word / 文本），面试官提问、追问、评估、报告全程参考
 - **知识库** — JD/简历/领域资料以条目形式注入 LLM 系统提示词，带字数预算与截断保护
-- **Hub 控制台** — 平台/LLM/ASR 凭证配置、agent 启停与日志、面试参数全量在线编辑（人设、话术、工作流、提示词模板、题库），带**最终提示词实时预览**
+- **Hub 控制台** — 平台/LLM/ASR 凭证配置（LLM 与 ASR 均带**一键连接测试**）、agent 启停与日志、面试参数全量在线编辑（人设、话术、工作流、提示词模板、题库），带**最终提示词实时预览**
 
 ## 架构
 
@@ -73,13 +73,17 @@ cd ../python-agent && python hub/hub.py
 | `LIVEAVATAR_API_KEY` | 是 | LiveAvatar 平台 Key（数字人视频/TTS） |
 | `LIVEAVATAR_AVATAR_ID` | 是 | 数字人形象 ID |
 | `DEEPSEEK_API_KEY` | 是 | LLM Key（评估/追问/报告；OpenAI 兼容接口均可） |
-| `DASHSCOPE_API_KEY` | 语音必需 | Qwen 实时 ASR；WebSocket Agent 模式无平台 ASR 兜底，留空则仅能文本作答 |
+| `ASR_PROVIDER` | 否 | 语音识别服务：`dashscope`（默认）或 `volcengine`（火山引擎豆包语音） |
+| `DASHSCOPE_API_KEY` | 语音必需¹ | DashScope Qwen 实时 ASR（`provider=dashscope` 时） |
+| `VOLC_ASR_APP_ID` / `VOLC_ASR_ACCESS_TOKEN` / `VOLC_ASR_CLUSTER` | 语音必需¹ | 火山引擎流式识别凭证（`provider=volcengine` 时）；Cluster 从控制台服务详情页复制 |
 | `LIVEAVATAR_BASE_URL` | 否 | 默认 `https://facemarket.ai/vih/dispatcher`（与官方指南一致） |
 | `LIVEAVATAR_SANDBOX` | 否 | `true` 时路由到沙箱环境（每月 30 分钟免费额度） |
 | `LIVEAVATAR_VOICE_ID` | 否 | 覆盖形象默认音色 |
 | `LIVEAVATAR_VOICE_SPEED` | 否 | 平台 TTS 语速 0.5–2.0，留空用默认 |
 | `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL` | 否 | 默认 `https://api.deepseek.com` / `deepseek-v4-flash` |
 | `INTERVIEW_HTTP_PORT` / `HUB_PORT` | 否 | 默认 8083 / 8000 |
+
+> ¹ DashScope 与火山引擎二选一，取决于 `ASR_PROVIDER`；控制台里切换 provider 并「测试连接」即可。
 
 > ⚠️ **平台 TTS 前提**：本项目走「回传文本、平台合成语音」链路（`ttsProvider=platform`）。数字人需在 LiveAvatar 控制台开启平台 TTS 并配置音色（ttsProviderId / voiceId / fallbackVoiceId），否则文本回复不会驱动数字人说话（控制台默认为 `developer`，即开发者自行合成音频）。
 

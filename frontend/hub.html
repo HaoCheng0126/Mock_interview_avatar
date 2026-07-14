@@ -85,6 +85,12 @@
     transition: border-color .15s;
   }
   .field select { appearance: auto; }
+  .asr-group { display: none; }
+  .asr-group.show { display: block; }
+  .test-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .test-result { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+  .test-result.ok { color: var(--green); }
+  .test-result.err { color: var(--red); }
   .field input.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .field textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
   .field input:focus, .field textarea:focus {
@@ -259,24 +265,61 @@
             <input id="llm-model" class="mono" spellcheck="false" placeholder="deepseek-v4-flash">
           </div>
         </div>
-        <div class="field">
-          <label for="llm-system_prompt">系统提示词（可选，聊天 agent 使用）</label>
-          <textarea id="llm-system_prompt" placeholder="你是一位友善的数字人助手…"></textarea>
+        <div class="test-row">
+          <button id="llm-test-btn" onclick="testLlm()">测试连接</button>
+          <span class="test-result" id="llm-test-result"></span>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>语音识别 ASR</h2><span class="hint">DashScope Qwen 实时转写</span></div>
+      <div class="card-head"><h2>语音识别 ASR</h2><span class="hint">候选人语音作答的转写服务</span></div>
       <div class="card-body">
         <div class="field">
-          <label for="asr-dashscope_api_key">DashScope API Key</label>
-          <input id="asr-dashscope_api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
+          <label for="asr-provider">识别服务</label>
+          <select id="asr-provider" onchange="onProviderChange()">
+            <option value="volcengine">火山引擎（豆包语音）</option>
+            <option value="dashscope">阿里百炼 DashScope Qwen</option>
+          </select>
           <div class="note">语音作答必需 — WebSocket Agent 模式下 ASR 由开发者侧提供，平台无兜底；未配置时候选人仅能文本输入</div>
         </div>
-        <div class="field">
-          <label for="asr-model">ASR 模型</label>
-          <input id="asr-model" class="mono" spellcheck="false" placeholder="qwen3-asr-flash-realtime">
+
+        <div class="asr-group" data-provider="volcengine">
+          <div class="row2">
+            <div class="field">
+              <label for="asr-volc_app_id">APP ID</label>
+              <input id="asr-volc_app_id" class="mono" autocomplete="off" spellcheck="false" placeholder="2000000000">
+            </div>
+            <div class="field">
+              <label for="asr-volc_cluster">Cluster</label>
+              <input id="asr-volc_cluster" class="mono" spellcheck="false" placeholder="volcengine_streaming_common">
+              <div class="note">从控制台「服务详情」原样复制；粤语/川渝为不同集群</div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="asr-volc_access_token">Access Token</label>
+            <input id="asr-volc_access_token" class="mono" autocomplete="off" spellcheck="false" placeholder="Access Token">
+          </div>
+          <div class="field">
+            <label for="asr-volc_secret_key">Secret Key</label>
+            <input id="asr-volc_secret_key" class="mono" autocomplete="off" spellcheck="false" placeholder="Secret Key（当前流式识别用不到，留存备用）">
+          </div>
+        </div>
+
+        <div class="asr-group" data-provider="dashscope">
+          <div class="field">
+            <label for="asr-dashscope_api_key">DashScope API Key</label>
+            <input id="asr-dashscope_api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
+          </div>
+          <div class="field">
+            <label for="asr-model">ASR 模型</label>
+            <input id="asr-model" class="mono" spellcheck="false" placeholder="qwen3-asr-flash-realtime">
+          </div>
+        </div>
+
+        <div class="test-row">
+          <button id="asr-test-btn" onclick="testAsr()">测试连接</button>
+          <span class="test-result" id="asr-test-result"></span>
         </div>
       </div>
     </div>
@@ -301,8 +344,11 @@ const CONFIG_FIELDS = [
   ["platform", "api_key"], ["platform", "avatar_id"],
   ["platform", "voice_id"], ["platform", "base_url"],
   ["platform", "sandbox"], ["platform", "voice_speed"],
-  ["llm", "api_key"], ["llm", "base_url"], ["llm", "model"], ["llm", "system_prompt"],
+  ["llm", "api_key"], ["llm", "base_url"], ["llm", "model"],
+  ["asr", "provider"],
   ["asr", "dashscope_api_key"], ["asr", "model"],
+  ["asr", "volc_app_id"], ["asr", "volc_access_token"],
+  ["asr", "volc_secret_key"], ["asr", "volc_cluster"],
 ];
 const STATUS_TEXT = { running: "运行中", external: "外部运行", stopped: "未启动" };
 
@@ -327,6 +373,68 @@ async function loadConfig() {
   for (const [sec, field] of CONFIG_FIELDS) {
     $(`${sec}-${field}`).value = cfg[sec]?.[field] ?? "";
   }
+  onProviderChange();
+}
+
+function onProviderChange() {
+  const provider = $("asr-provider").value || "dashscope";
+  for (const group of document.querySelectorAll(".asr-group")) {
+    group.classList.toggle("show", group.dataset.provider === provider);
+  }
+}
+
+function setTestResult(kind, text, cls) {
+  const el = $(`${kind}-test-result`);
+  el.textContent = text;
+  el.className = "test-result" + (cls ? " " + cls : "");
+}
+
+async function runTest(kind, path, body) {
+  const btn = $(`${kind}-test-btn`);
+  btn.disabled = true;
+  setTestResult(kind, "测试中…", "");
+  try {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      const extra = kind === "llm" ? `（${data.latency_ms}ms · ${data.model}）` : "";
+      setTestResult(kind, "✅ 连接成功 " + extra, "ok");
+    } else {
+      setTestResult(kind, "❌ " + (data.error || "连接失败"), "err");
+    }
+  } catch (e) {
+    setTestResult(kind, "❌ " + e.message, "err");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function testLlm() {
+  runTest("llm", "/api/config/test-llm", {
+    llm: {
+      api_key: $("llm-api_key").value,
+      base_url: $("llm-base_url").value,
+      model: $("llm-model").value,
+    },
+  });
+}
+
+function testAsr() {
+  runTest("asr", "/api/config/test-asr", {
+    asr: {
+      provider: $("asr-provider").value,
+      dashscope_api_key: $("asr-dashscope_api_key").value,
+      model: $("asr-model").value,
+      volc_app_id: $("asr-volc_app_id").value,
+      volc_access_token: $("asr-volc_access_token").value,
+      volc_secret_key: $("asr-volc_secret_key").value,
+      volc_cluster: $("asr-volc_cluster").value,
+    },
+  });
 }
 
 function collectPorts() {

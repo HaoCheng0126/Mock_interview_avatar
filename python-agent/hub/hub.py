@@ -44,6 +44,10 @@ from hub.interview_config import (  # noqa: E402
     read_config as read_interview_config,
     save_config as save_interview_config,
 )
+from hub.connection_test import (  # noqa: E402
+    check_asr_connection,
+    check_llm_connection,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("hub")
@@ -263,6 +267,26 @@ async def post_interview_preview_handler(request: web.Request) -> web.Response:
     return web.json_response({"success": True, **preview})
 
 
+async def _merged_from_request(request: web.Request) -> dict:
+    """Merge the (possibly masked) form payload onto saved settings so tests run
+    with real secrets even before the user hits Save."""
+    try:
+        incoming = await request.json()
+    except Exception:
+        incoming = {}
+    return apply_update(load_settings(), incoming)
+
+
+async def test_llm_handler(request: web.Request) -> web.Response:
+    result = await check_llm_connection(await _merged_from_request(request))
+    return web.json_response(result)
+
+
+async def test_asr_handler(request: web.Request) -> web.Response:
+    result = await check_asr_connection(await _merged_from_request(request))
+    return web.json_response(result)
+
+
 async def _cleanup(app: web.Application) -> None:
     await asyncio.gather(*(m.stop() for m in _managed.values()))
 
@@ -272,6 +296,8 @@ def main() -> None:
     app.router.add_get("/", index_handler)
     app.router.add_get("/api/config", get_config_handler)
     app.router.add_post("/api/config", post_config_handler)
+    app.router.add_post("/api/config/test-llm", test_llm_handler)
+    app.router.add_post("/api/config/test-asr", test_asr_handler)
     app.router.add_get("/api/agents", agents_status_handler)
     app.router.add_post("/api/agents/start", start_agent_handler)
     app.router.add_post("/api/agents/stop", stop_agent_handler)

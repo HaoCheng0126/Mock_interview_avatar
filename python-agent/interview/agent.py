@@ -42,7 +42,10 @@ VOICE_ID = os.getenv("LIVEAVATAR_VOICE_ID", None)
 SANDBOX = os.getenv("LIVEAVATAR_SANDBOX", "").strip().lower() in {"1", "true", "yes", "on"}
 HTTP_PORT = int(os.getenv("INTERVIEW_HTTP_PORT", "8083"))
 
+ASR_PROVIDER = os.getenv("ASR_PROVIDER", "dashscope").strip().lower()
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
+VOLC_ASR_APP_ID = os.getenv("VOLC_ASR_APP_ID", "")
+VOLC_ASR_ACCESS_TOKEN = os.getenv("VOLC_ASR_ACCESS_TOKEN", "")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
@@ -118,6 +121,27 @@ def build_controller(agent) -> InterviewController:
     )
 
 
+def _build_asr_manager(listener):
+    """Pick the developer ASR by ASR_PROVIDER; None when creds are missing."""
+    callbacks = dict(
+        on_transcript=listener._on_asr_transcript,
+        on_speech_started=listener._on_speech_started,
+        on_speech_stopped=listener._on_speech_stopped,
+        on_interim=listener._on_asr_interim,
+    )
+    if ASR_PROVIDER == "volcengine":
+        if not (VOLC_ASR_APP_ID and VOLC_ASR_ACCESS_TOKEN):
+            return None
+        from interview.volcano_asr import VolcAsrManager
+
+        return VolcAsrManager(**callbacks)
+    if DASHSCOPE_API_KEY:
+        from interview.asr_manager import QwenAsrManager
+
+        return QwenAsrManager(**callbacks)
+    return None
+
+
 async def start_interview_session() -> tuple[str, str]:
     global _agent, _controller, _listener, _asr_manager, _session_info, _last_interview_status
 
@@ -131,21 +155,15 @@ async def start_interview_session() -> tuple[str, str]:
     _last_interview_status = None
 
     _listener = InterviewListener()
-    if DASHSCOPE_API_KEY:
-        from interview.asr_manager import QwenAsrManager
-
-        _asr_manager = QwenAsrManager(
-            on_transcript=_listener._on_asr_transcript,
-            on_speech_started=_listener._on_speech_started,
-            on_speech_stopped=_listener._on_speech_stopped,
-            on_interim=_listener._on_asr_interim,
-        )
+    _asr_manager = _build_asr_manager(_listener)
+    if _asr_manager is not None:
         _listener.asr_manager = _asr_manager
     else:
         # WebSocket Agent 模式下 ASR 始终由开发者提供（见官方接入指南），
-        # 平台侧没有 ASR 兜底 — 缺少 DashScope Key 时语音作答不可用。
+        # 平台侧没有 ASR 兜底 — 缺少识别凭证时语音作答不可用。
         logger.warning(
-            "DASHSCOPE_API_KEY 未配置 — 语音作答不可用，候选人仅能通过文本输入回答"
+            "ASR 未配置（provider=%s）— 语音作答不可用，候选人仅能通过文本输入回答",
+            ASR_PROVIDER,
         )
 
     voice_config = None
