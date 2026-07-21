@@ -1,163 +1,55 @@
 interview:
-  title: Python 后端工程师模拟面试
+  title: 综合模拟面试
   lang: zh
   duration_minutes: 20
   difficulty: mid
-  max_probe_per_question: 2
+  max_probe_per_question: 1
 interviewer:
-  name: 林面试官
-  style: 专业、克制、适度追问，不打断候选人
+  name: 陈珊
+  style: 冷静、友好、结构清晰，先完整听取候选人的真实经历，再围绕关键事实进行克制追问
   rules:
   - 一次只问一个问题
-  - 追问最多连续两次
+  - 一次话术里只保留一个问号，不要在同一句里问两个问题
+  - 自我介绍用于建立背景信息，不追问
+  - 简历环节先让候选人简单介绍项目，再围绕与岗位相关的 1 到 2 个核心点提问
+  - 只有当回答缺少关键事实、做法、结果或取舍时才追问，而且每题最多追问一次
+  - 业务题同样每题最多追问一次
+  - 只能围绕候选人填写的目标岗位、真实 JD 和简历提问，不得带入其他岗位的技术题或残留题库
+  - 追问优先确认个人职责、关键判断、具体动作、结果和复盘，避免抽象空谈
   - 不直接给标准答案
   - 结束后再集中反馈
-candidate:
-  target_role: Python 后端工程师
-  background: 有 3 年后端经验，熟悉 FastAPI、MySQL、Redis
-rubric:
-  dimensions:
-  - technical_depth
-  - problem_solving
-  - project_ownership
-  - communication_clarity
-  - collaboration
-  - learning_ability
-  - reliability_awareness
-  - role_fit
-question_sets:
-- id: project_deep_dive
-  question_id: q_project_deep_dive_001
-  title: 项目深挖
-  prompt: 请介绍一个你最近主导或深度参与的后端项目，重点讲你负责的部分、技术难点和最终结果。
-  required: true
-  competency: project_ownership
-  difficulty: mid
-  expected_signals:
-  - 个人负责的部分
-  - 技术难点
-  - 最终结果
-  red_flags:
-  - 只描述团队成果
-  - 没有量化结果
-  max_followups: 2
-- id: python_backend
-  question_id: q_python_backend_001
-  title: 后端技术
-  prompt: 请说明你在 Python 后端服务中如何处理接口性能和可靠性问题。
-  required: true
-  competency: reliability_awareness
-  difficulty: mid
-  expected_signals:
-  - 性能指标
-  - 降级或重试
-  - 监控告警
-  red_flags:
-  - 只有框架名，没有处理方案
-  - 忽略异常和故障场景
-  max_followups: 2
-- id: architecture_design
-  question_id: q_architecture_design_001
-  title: 架构设计
-  prompt: 如果让你设计一个高并发的订单查询服务，你会如何拆分模块、设计缓存和保证数据一致性？
-  required: true
-  competency: technical_depth
-  difficulty: mid
-  expected_signals:
-  - 模块边界
-  - 缓存策略
-  - 一致性取舍
-  red_flags:
-  - 只堆技术名词
-  - 没有说明取舍
-  max_followups: 2
-- id: incident_debugging
-  question_id: q_incident_debugging_001
-  title: 故障排查
-  prompt: 线上接口突然变慢，你会如何定位问题并恢复服务？
-  required: true
-  competency: problem_solving
-  difficulty: mid
-  expected_signals:
-  - 监控指标
-  - 定位路径
-  - 恢复措施
-  red_flags:
-  - 没有优先恢复服务
-  - 缺少排查顺序
-  max_followups: 2
-- id: reliability_design
-  question_id: q_reliability_design_001
-  title: 可靠性设计
-  prompt: 请讲讲你在项目中如何处理重试、幂等、降级和告警。
-  required: true
-  competency: reliability_awareness
-  difficulty: mid
-  expected_signals:
-  - 幂等
-  - 降级
-  - 告警
-  red_flags:
-  - 只依赖人工发现问题
-  - 没有幂等意识
-  max_followups: 2
-- id: learning_growth
-  question_id: q_learning_growth_001
-  title: 学习成长
-  prompt: 请说一次你主动学习新技术并落地到项目中的经历。
-  required: false
-  competency: learning_ability
-  difficulty: mid
-  expected_signals:
-  - 学习动机
-  - 落地过程
-  - 结果复盘
-  red_flags:
-  - 只停留在看文档
-  - 没有实际应用
-  max_followups: 1
-- id: communication
-  question_id: q_communication_001
-  title: 沟通表达
-  prompt: 请用非技术同事能听懂的方式解释一次复杂技术方案。
-  required: false
-  competency: communication_clarity
-  difficulty: mid
-  expected_signals:
-  - 简化表达
-  - 听众视角
-  - 确认理解
-  red_flags:
-  - 大量术语堆砌
-  - 忽略听众背景
-  max_followups: 1
-- id: behavior
-  question_id: q_behavior_001
-  title: 行为面试
-  prompt: 请讲一次你和他人对技术方案有分歧的经历，以及你是如何推进的。
-  required: false
-  competency: collaboration
-  difficulty: mid
-  expected_signals:
-  - 分歧背景
-  - 沟通过程
-  - 最终决策
-  red_flags:
-  - 只强调自己正确
-  - 没有说明协作过程
-  max_followups: 1
-- id: role_fit
-  question_id: q_role_fit_001
-  title: 岗位匹配
-  prompt: 结合你的经历，你认为自己最适合这个 Python 后端岗位的三个理由是什么？
-  required: false
-  competency: role_fit
-  difficulty: mid
-  expected_signals:
-  - 岗位理解
-  - 经验匹配
-  - 成长目标
-  red_flags:
-  - 泛泛而谈
-  - 不了解岗位要求
-  max_followups: 1
+positions:
+- name: Python 后端工程师
+  match_keywords:
+  - python
+  - 后端
+  - backend
+  - fastapi
+  - mysql
+  - redis
+  - 高并发
+  - 架构
+  business_questions:
+  - 请介绍一个你最近主导或深度参与的后端项目，重点讲你负责的部分、技术难点和最终结果。
+  - 请说明你在 Python 后端服务中如何处理接口性能和可靠性问题。
+  - 如果让你设计一个高并发的订单查询服务，你会如何拆分模块、设计缓存和保证数据一致性？
+  - 线上接口突然变慢，你会如何定位问题并恢复服务？
+  - 请讲讲你在项目中如何处理重试、幂等、降级和告警。
+  - 请说一次你主动学习新技术并落地到项目中的经历。
+  - 请用非技术同事能听懂的方式解释一次复杂技术方案。
+  - 请讲一次你和他人对技术方案有分歧的经历，以及你是如何推进的。
+  - 结合你的经历，你认为自己最适合这个 Python 后端岗位的三个理由是什么？
+  core_competencies: 重点考察 Python 后端工程能力：技术深度（模块拆分、缓存策略、一致性取舍），问题解决（线上故障的定位、恢复与排查顺序）， 项目主导力（个人真正负责的部分、技术难点与量化结果），可靠性意识（重试、幂等、降级、告警与监控），
+    以及沟通表达、协作推进、主动学习和与岗位的匹配度。回答需给出具体做法、取舍理由和可衡量的结果，避免只堆术语或只讲团队成果。
+speech:
+  self_intro_prompt: 请你先做一个简短的自我介绍吧。
+  prep_template: 你好，我是{interviewer_name}。你可以先填写岗位名称、岗位 JD 和简历。准备好后点击开始面试，我们就正式开始。
+  opening_template: 你好，今天我们先简单聊聊你和{target_role}这个方向的匹配度，大概会占用你 {duration_minutes} 分钟。
+  next_question_transitions:
+  - 好的，下一个问题。
+  - 好，这个问题先到这里。我们继续往下聊。
+  - 清楚了。
+  - 好的，我记下了。
+workflow:
+  candidate_speech_grace_seconds: 12
+  max_skipped_questions: 1

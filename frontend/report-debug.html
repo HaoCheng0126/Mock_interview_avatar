@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>模拟面试报告调试页</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --paper: #ffffff;
+      --line: #ece8da;
+      --text: #2d2d2d;
+      --muted: #7a776e;
+      --gold: #e8c63d;
+      --gold-soft: rgba(232,198,61,.18);
+      --green-bg: #f8fafc;
+      --green-text: #1f8b61;
+      --amber-bg: #f8fafc;
+      --amber-text: #c7871d;
+      --danger: #d46746;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 28px 20px 72px;
+    }
+
+    .debug-toolbar {
+      position: sticky;
+      top: 16px;
+      z-index: 10;
+      max-width: 1120px;
+      margin: 0 auto 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 6px 18px rgba(31, 41, 55, .04);
+    }
+
+    .toolbar-left, .toolbar-right { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .toolbar-title { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .tool-btn {
+      appearance: none;
+      border: 1px solid #ddd8c8;
+      background: #fff;
+      color: #4d4a43;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .tool-btn.active { background: #f5e5a9; border-color: #eccf5b; color: #785600; }
+
+    #report-root { max-width: 1120px; margin: 0 auto; }
+    .report-doc { display: grid; gap: 22px; }
+    .surface {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 4px 12px rgba(31, 41, 55, .03);
+    }
+
+    .cover {
+      min-height: 240px;
+      padding: 28px 28px 30px;
+    }
+    .cover-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 28px;
+      align-items: start;
+    }
+    .cover-title {
+      font-size: clamp(36px, 5.2vw, 56px);
+      line-height: 1.04;
+      letter-spacing: -.05em;
+      font-weight: 700;
+      margin: 0 0 18px;
+      color: #252525;
+    }
+    .cover-meta { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; color: #676767; font-size: 13px; }
+    .cover-meta li { display: flex; align-items: center; gap: 10px; }
+    .cover-meta .dot {
+      width: 18px; height: 18px; border-radius: 4px; border: 1px solid #d8d4c8;
+      display: inline-grid; place-items: center; color: #8d8a7d; font-size: 10px; background: rgba(255,255,255,.8);
+      flex-shrink: 0;
+    }
+    .cover-meta strong { color: #232323; font-weight: 600; }
+    .cover-side {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+    }
+    .cover-score-ring { width: 136px; height: 136px; }
+    .cover-score-track { stroke: #f0ece1; }
+    .cover-score-fill { stroke: var(--gold); stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; }
+    .cover-score-num { fill: #2b2b2b; font-size: 28px; font-weight: 700; }
+    .cover-score-sub { fill: #7c7a70; font-size: 11px; }
+    .section { padding: 22px 24px 24px; }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -.04em;
+      color: #2b2b2b;
+    }
+    .section-title .mark {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: #f0cc47;
+      flex-shrink: 0;
+    }
+    .summary {
+      margin: 0 0 16px;
+      color: #424242;
+      font-size: 14px;
+      line-height: 1.95;
+    }
+
+    .eval-grid, .matrix-grid, .qa-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .note-card {
+      border-radius: 16px;
+      padding: 16px 18px;
+      border: 1px solid #ebe5d3;
+      background: #fff;
+    }
+    .note-card h3 { margin: 0 0 10px; font-size: 15px; }
+    .note-card.warn { border-left: 4px solid #f0cc47; }
+    .note-card.warn h3 { color: #3f3f3f; }
+    .note-card.good { border-left: 4px solid #d7e1ee; }
+    .note-card.good h3 { color: #3f3f3f; }
+    .note-card ul { margin: 0; padding-left: 16px; color: #4c4c4c; font-size: 13px; line-height: 1.8; }
+    .note-card .empty { list-style: none; margin-left: -16px; color: var(--muted); }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    #radar-chart { width: 100%; height: auto; display: block; }
+    .radar-axis-label { font-size: 12px; fill: #5f5d55; font-weight: 600; }
+    .radar-grid-line { fill: none; stroke: #eadfb5; stroke-width: 1; }
+    .radar-spoke { stroke: #eadfb5; stroke-width: 1; }
+    .radar-area { fill: var(--gold-soft); stroke: var(--gold); stroke-width: 2.2; }
+    .radar-point { fill: #fff; stroke: var(--gold); stroke-width: 2; }
+    .radar-score-label { font-size: 11px; fill: #c77017; font-weight: 700; }
+
+    .dimension-list { display: grid; gap: 12px; }
+    .dimension-item {
+      display: grid;
+      grid-template-columns: 112px 1fr 60px;
+      gap: 14px;
+      align-items: start;
+    }
+    .dimension-name { font-size: 14px; font-weight: 700; color: #3a3a3a; }
+    .dimension-copy { font-size: 12.5px; color: #6a6a6a; line-height: 1.7; }
+    .dimension-score { text-align: right; color: var(--danger); font-size: 14px; font-weight: 700; }
+
+    .matrix-card {
+      padding: 16px 16px 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #ece7da;
+    }
+    .matrix-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .matrix-head h3 { margin: 0; font-size: 15px; color: #2e2e2e; }
+    .matrix-score { color: #d47b5d; font-size: 13px; font-weight: 700; }
+    .matrix-bar { margin-top: 10px; height: 6px; border-radius: 999px; background: #efede6; overflow: hidden; }
+    .matrix-bar i { display: block; height: 100%; background: linear-gradient(90deg, #edcf57, #e4b81a); }
+    .matrix-label { margin-top: 12px; color: #8b897f; font-size: 11px; }
+    .matrix-copy { margin-top: 8px; color: #555; font-size: 12.5px; line-height: 1.75; }
+    .matrix-tip {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #faf8f1;
+      color: #6b6455;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .plan-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .plan-tag {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6d6557;
+      background: #f5f2e8;
+    }
+    .plan-grid {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 18px;
+      align-items: center;
+    }
+    .plan-phase + .plan-phase { margin-top: 16px; }
+    .plan-phase h3 { margin: 0 0 8px; font-size: 15px; color: #353535; }
+    .plan-phase span { color: #8f8c81; font-size: 12px; margin-left: 6px; }
+    .plan-phase ul { margin: 0; padding-left: 18px; color: #565656; font-size: 13px; line-height: 1.8; }
+    .qa-list-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .qa-total { color: #8a877b; font-size: 13px; font-weight: 600; }
+    #qa-list { display: grid; gap: 16px; }
+    .qa-item {
+      border-top: 1px solid #ece7da;
+      padding-top: 14px;
+    }
+    .qa-item:first-child { border-top: none; padding-top: 0; }
+    .qa-item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .qa-item-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      background: #f5f2e8;
+      color: #6b6455;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .qa-item-score { color: var(--danger); font-size: 14px; font-weight: 700; }
+    .qa-prompt { color: #383838; font-size: 14px; line-height: 1.9; }
+    .qa-answer-wrap {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #f7f7f5;
+      color: #505050;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+    .qa-chip-card {
+      border-radius: 10px;
+      padding: 12px 14px;
+      min-height: 112px;
+      border: 1px solid #e7e3d6;
+    }
+    .qa-chip-card.good,
+    .qa-chip-card.warn { background: #fff; }
+    .qa-chip-card h4 { margin: 0 0 8px; font-size: 13px; }
+    .qa-chip-card.good h4 { color: var(--green-text); }
+    .qa-chip-card.warn h4 { color: var(--amber-text); }
+    .qa-chip-card ul { margin: 0; padding-left: 16px; color: #565656; font-size: 12.5px; line-height: 1.75; }
+    .qa-analysis, .qa-sample-answer {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #ece7da;
+      background: #fff;
+    }
+    .qa-analysis h4, .qa-sample-answer h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: #545048;
+    }
+    .qa-analysis p, .qa-sample-answer p {
+      margin: 0;
+      color: #565656;
+      font-size: 12.5px;
+      line-height: 1.85;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 1120px) {
+      .cover-grid, .analysis-grid, .plan-grid, .matrix-grid { grid-template-columns: 1fr; }
+      .cover-side { justify-self: start; }
+    }
+    @media (max-width: 720px) {
+      body { padding-inline: 14px; }
+      .cover, .section { padding-inline: 18px; }
+      .eval-grid, .matrix-grid, .qa-two-col { grid-template-columns: 1fr; }
+      .dimension-item { grid-template-columns: 1fr; }
+      .dimension-score { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="debug-toolbar">
+    <div class="toolbar-left">
+      <span class="toolbar-title">报告测试页</span>
+      <button class="tool-btn active" data-scene="pm">产品经理样例</button>
+      <button class="tool-btn" data-scene="backend">后端样例</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="tool-btn" id="copy-link-btn">复制调试链接</button>
+    </div>
+  </div>
+
+  <main id="report-root">
+    <div class="report-doc">
+      <section class="cover surface">
+        <div class="cover-grid">
+          <div>
+            <h1 class="cover-title" id="report-title">模拟面试报告</h1>
+            <ul class="cover-meta">
+              <li><span class="dot">□</span><span>面试类型</span><strong id="cover-type">综合面试</strong></li>
+              <li><span class="dot">○</span><span>面试时长</span><strong id="cover-duration">45分钟</strong></li>
+              <li><span class="dot">◔</span><span>面试时间</span><strong id="cover-time">--</strong></li>
+            </ul>
+          </div>
+          <div class="cover-side">
+            <svg class="cover-score-ring" viewBox="0 0 136 136" aria-label="综合得分">
+              <circle class="cover-score-track" cx="68" cy="68" r="40" fill="none" stroke-width="4.5"></circle>
+              <circle class="cover-score-fill" id="cover-score-fill" cx="68" cy="68" r="40" fill="none" stroke-width="4.5"></circle>
+              <text class="cover-score-num" id="cover-score-num" x="68" y="62" text-anchor="middle">0</text>
+              <text class="cover-score-sub" x="68" y="82" text-anchor="middle">综合得分</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface">
+        <h2 class="section-title"><span class="mark"></span><span>面试官评价</span></h2>
+        <p class="summary" id="report-summary"></p>
+        <div class="eval-grid">
+          <div class="note-card warn">
+            <h3>关注提醒</h3>
+            <ul id="weaknesses-list"></ul>
+          </div>
+          <div class="note-card good">
+            <h3>核心建议</h3>
+            <ul id="recs-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface">
+        <h2 class="section-title"><span class="mark"></span><span>综合能力分析</span></h2>
+        <div class="analysis-grid">
+          <div>
+            <svg id="radar-chart" viewBox="0 0 360 320" aria-label="综合能力分析雷达图"></svg>
+          </div>
+          <div class="dimension-list" id="dimension-list"></div>
+        </div>
+      </section>
+
+      <section class="section surface">
+        <h2 class="section-title"><span class="mark"></span><span>学习规划与建议</span></h2>
+        <div class="plan-tags" id="plan-tags"></div>
+        <div class="plan-grid">
+          <div id="plan-steps"></div>
+        </div>
+      </section>
+
+      <section class="section surface">
+        <div class="qa-list-head">
+          <h2 class="section-title" style="margin-bottom:0"><span class="mark"></span><span>面试题目解析记录</span></h2>
+          <div class="qa-total" id="qa-total">共 0 题</div>
+        </div>
+        <div id="qa-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const REPORT_DIMENSION_META = {
+      communication_clarity: { label: "表达能力", radar: "表达能力", desc: "表达是否清楚、有条理，是否便于理解" },
+      problem_solving: { label: "逻辑能力", radar: "逻辑能力", desc: "拆解问题、分析问题与提出方案的能力" },
+      outcome_orientation: { label: "结果导向", radar: "结果导向", desc: "是否具备目标意识、推进意识与复盘意识，关注产出效果和持续优化" },
+      project_execution: { label: "项目展现力", radar: "项目展现力", desc: "是否清晰呈现项目背景、职责、动作与结果" },
+      role_alignment: { label: "岗位契合度", radar: "岗位契合度", desc: "与目标岗位要求、工作场景和能力预期的匹配度" },
+    };
+
+    const FIXTURES = {
+      pm: {
+        reportLabel: "产品经理模拟面试报告",
+        coverType: "综合面试",
+        coverDuration: "45分钟",
+        coverTime: "2026-07-16 19:18:23",
+        finalReport: {
+          cover: { title: "产品经理模拟面试报告", interviewType: "综合面试", durationText: "45分钟", generatedAt: "2026-07-16 19:18:23", score: 78 },
+          summary: "候选人在项目叙述、需求判断和结果复盘上具备一定基础，能讲清 AI 助手产品的目标、数据闭环和上线节奏；但在用户洞察深度、方案权衡的显式表达上还有明显空缺，部分回答偏结论先行，证据也不够扎实。如果在两周内补齐 2-3 个完整案例的表达模板，竞争力会明显提升。",
+          overallScore: 78,
+          strengths: [
+            "项目目标、职责和最终数据结果交代相对完整。",
+            "能用留存、转化等数据说明上线后效果。",
+            "面对追问能继续给出验证思路。"
+          ],
+          weaknesses: [
+            "用户洞察过程说得还不够深入，更像在描述结论而不是过程。",
+            "方案取舍和优先级判断缺少完整推导。",
+            "少量回答明显偏结果导向，对中间思考展开不足。"
+          ],
+          recommendations: [
+            "补充 2 到 3 个用户研究与需求验证案例，形成稳定的表达模板。",
+            "回答时强化「为什么做、为什么先做、为什么这样做」的推导链路。",
+            "每个项目至少准备一个从数据发现问题到验证闭环的完整案例。"
+          ],
+          dimensions: {
+            communication_clarity: { score: 8, evidence: ["回答主线比较清楚，关键结果表达明确"], concerns: ["少量回答仍偏结论先行"], recommendations: ["强化结构化表达"], confidence: "medium" },
+            problem_solving: { score: 7, evidence: ["能给出基于数据验证的判断路径"], concerns: ["方案比较与取舍逻辑仍不够完整"], recommendations: ["强化方案取舍与优先级判断表达"], confidence: "medium" },
+            outcome_orientation: { score: 8, evidence: ["能说明灰度验证、上线节奏和数据复盘的闭环"], concerns: ["部分回答更强调结论，复盘细节仍可展开"], recommendations: ["补充目标设定、推进动作和复盘机制"], confidence: "medium" },
+            project_execution: { score: 9, evidence: ["主导 AI 助手产品从 0 到 1 并说明留存提升"], concerns: ["部分推进细节未充分展开"], recommendations: ["增加跨团队协同与推进阻力的描述"], confidence: "high" },
+            role_alignment: { score: 7, evidence: ["能把用户痛点、优先级和指标变化关联起来"], concerns: ["用户价值洞察深度还可增强"], recommendations: ["补充更细的用户洞察过程"], confidence: "medium" },
+          }
+        },
+        transcript: [
+          { role: "interviewer", type: "main_question", text: "请你先介绍一个你主导过的产品项目，重点说说目标、你的职责和最终结果。" },
+          { role: "candidate", type: "answer", text: "我主导过一个 AI 助手从 0 到 1 的产品化项目，负责需求梳理、MVP 设计、上线验证和数据复盘，上线后次周留存提升了 12%。" },
+          { role: "interviewer", type: "follow_up", text: "你当时是如何判断这个需求值得优先做，以及如何验证效果的？" },
+          { role: "candidate", type: "answer", text: "我先看了用户任务链路里的流失点，确认这是高频痛点，再通过小范围灰度验证转化率和留存变化，数据验证后再推动全量上线。" },
+          { role: "interviewer", type: "main_question", text: "如果让你重新做一次，你会优先优化这个项目中的哪一部分，为什么？" },
+          { role: "candidate", type: "answer", text: "我会优先补齐新手引导和首日激活链路，因为虽然核心功能验证通过了，但前置理解成本仍然偏高，影响用户的首次体验。"}
+        ]
+      },
+      backend: {
+        reportLabel: "Python 后端工程师模拟面试报告",
+        coverType: "综合面试",
+        coverDuration: "42分钟",
+        coverTime: "2026-07-16 20:05:10",
+        finalReport: {
+          cover: { title: "Python 后端工程师模拟面试报告", interviewType: "综合面试", durationText: "42分钟", generatedAt: "2026-07-16 20:05:10", score: 82 },
+          summary: "候选人在项目经历、系统设计和结果表达上表现稳定，能讲清订单中台重构的关键取舍与业务收益；但复杂故障排查的完整链路讲得不够深入，稳定性治理的长期机制也偏概念化。如果补齐 1-2 个高压故障案例的拆解思路，整体竞争力会再上一个台阶。",
+          overallScore: 82,
+          strengths: [
+            "项目背景、目标、动作、结果能讲清楚。",
+            "面对缓存击穿这类问题能给到完整应对方案。",
+            "能用峰值能力提升等指标说明上线效果。"
+          ],
+          weaknesses: [
+            "复杂故障排查的完整链路讲得还不够深入。",
+            "部分回答偏结果导向，对中间权衡过程展开不足。",
+            "对稳定性治理的长期机制描述不够具体。"
+          ],
+          recommendations: [
+            "补充 1 到 2 个高压故障处置案例，形成可复用的话术模板。",
+            "回答时按「背景-目标-动作-结果-复盘」结构展开，提升说服力。",
+            "准备一套关于高并发、缓存一致性和稳定性治理的专项案例。"
+          ],
+          dimensions: {
+            communication_clarity: { score: 8, evidence: ["回答主线清晰，重点信息比较集中"], concerns: ["局部回答有轻微跳跃"], recommendations: ["适当增加层次化表达"], confidence: "medium" },
+            problem_solving: { score: 9, evidence: ["能给出缓存风险规避思路"], concerns: ["疑难问题定位路径说得还不够完整"], recommendations: ["补充排查链路与验证步骤"], confidence: "high" },
+            outcome_orientation: { score: 9, evidence: ["能够说明峰值能力提升后的效果验证与上线节奏"], concerns: ["长期复盘与治理机制描述还可更系统"], recommendations: ["补充目标拆解、推进机制和复盘闭环"], confidence: "high" },
+            project_execution: { score: 9, evidence: ["主导订单中台重构并量化提升峰值能力"], concerns: ["部分推进指标未展开"], recommendations: ["增加推进阻力和协作方式的描述"], confidence: "high" },
+            role_alignment: { score: 7, evidence: ["能够说明技术方案与稳定性目标的关系"], concerns: ["业务价值与用户影响还可再拉通"], recommendations: ["补充业务指标与用户影响"], confidence: "medium" },
+          }
+        },
+        transcript: [
+          { role: "interviewer", type: "main_question", text: "请介绍一个你最近主导的后端项目，重点说说你的职责和最终收益。" },
+          { role: "candidate", type: "answer", text: "我主导了订单中台的重构，负责架构设计、核心链路改造和灰度发布，上线后峰值处理能力提升了三倍。" },
+          { role: "interviewer", type: "follow_up", text: "如果缓存击穿和数据库热点同时发生，你们是怎么处理的？" },
+          { role: "candidate", type: "answer", text: "我们用了互斥重建、随机过期、本地二级缓存和热点 Key 保护，同时在数据库层做读写隔离和限流兜底。" },
+          { role: "interviewer", type: "main_question", text: "你经历过最棘手的一次线上事故是什么，你是怎么定位和推动解决的？" },
+          { role: "candidate", type: "answer", text: "一次高峰期因为消息堆积和连接池耗尽导致超时飙升，我先通过链路监控定位瓶颈，再做线程池、连接池和消费速率的联动治理。" }
+        ]
+      }
+    };
+
+    function $(id) { return document.getElementById(id); }
+
+    function scoreToTen(score) {
+      return Math.max(0, Math.min(10, Number(score) || 0));
+    }
+
+    function scoreToHundred(score) {
+      return Math.max(0, Math.min(100, Number(score) || 0));
+    }
+
+    function render(scene) {
+      const data = FIXTURES[scene];
+      const report = data.finalReport || {};
+      // 新规则：综合分 0~100，维度分 0~10；旧 0~5 兼容
+      const overallRaw = Number(report.overallScore ?? report.cover?.score ?? 0);
+      const overall = overallRaw <= 5 ? Math.round(overallRaw * 20) : scoreToHundred(overallRaw);
+      const score10 = overall / 10; // 雷达图与维度仍按 0~10 渲染
+      $("report-title").textContent = report.cover?.title || data.reportLabel;
+      $("cover-type").textContent = report.cover?.interviewType || data.coverType;
+      $("cover-duration").textContent = report.cover?.durationText || data.coverDuration;
+      $("cover-time").textContent = report.cover?.generatedAt || data.coverTime;
+      $("cover-score-num").textContent = String(Math.round(overall));
+      const ring = $("cover-score-fill");
+      const circ = 2 * Math.PI * 40;
+      ring.style.strokeDasharray = circ.toFixed(1);
+      ring.style.strokeDashoffset = (circ * (1 - overall / 100)).toFixed(1);
+      $("report-summary").textContent = report.summary || "暂无总结";
+
+      fillList("weaknesses-list", report.highlights?.alerts || report.weaknesses);
+      fillList("recs-list", report.highlights?.advice || report.recommendations);
+
+      const radarData = buildRadarData(report);
+      renderRadarChart(radarData);
+      renderDimensionList(radarData, report.dimensionCommentaries || []);
+      renderPlanSection(report, radarData);
+      renderQaList(report.qaAnalyses || [], data.transcript, radarData);
+    }
+
+    function fillList(id, items) {
+      const ul = $(id);
+      ul.innerHTML = "";
+      for (const item of items || []) {
+        const li = document.createElement("li");
+        li.textContent = item;
+        ul.appendChild(li);
+      }
+      if (!ul.children.length) {
+        const li = document.createElement("li");
+        li.className = "empty";
+        li.textContent = "（无）";
+        ul.appendChild(li);
+      }
+    }
+
+    function buildRadarData(report) {
+      const dims = report.dimensions || {};
+      return [
+        buildRadarEntry("communication_clarity", dims.communication_clarity, 6),
+        buildRadarEntry("problem_solving", dims.problem_solving || dims.structured_thinking, 6),
+        buildRadarEntry("outcome_orientation", dims.outcome_orientation || dims.result_orientation || dims.technical_depth, 6),
+        buildRadarEntry("project_execution", dims.project_execution || dims.execution_ownership, 6),
+        buildRadarEntry("role_alignment", dims.role_alignment || dims.business_alignment || dims.business_understanding, 6),
+      ];
+    }
+
+    function buildRadarEntry(key, dim, fallback) {
+      const meta = REPORT_DIMENSION_META[key];
+      // 兼容旧 0~5 维度分；新规则下值就是 0~10
+      const raw = dim && dim.score != null ? Number(dim.score) : fallback;
+      const score = raw <= 5 ? raw * 2 : Math.max(0, Math.min(10, raw));
+      return {
+        key,
+        label: meta.label,
+        radar: meta.radar,
+        desc: meta.desc,
+        score,
+        evidence: (dim && dim.evidence) || [],
+        concerns: (dim && dim.concerns) || [],
+        recommendations: (dim && dim.recommendations) || [],
+      };
+    }
+
+    function renderRadarChart(items) {
+      const svg = $("radar-chart");
+      svg.innerHTML = "";
+      const cx = 176;
+      const cy = 158;
+      const radius = 112;
+      const steps = 5;
+      const angles = items.map((_, index) => (-Math.PI / 2) + (Math.PI * 2 * index / items.length));
+      for (let step = 1; step <= steps; step++) {
+        const r = radius * (step / steps);
+        const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        polygon.setAttribute("points", angles.map((angle) => pointAt(cx, cy, angle, r)).join(" "));
+        polygon.setAttribute("class", "radar-grid-line");
+        svg.appendChild(polygon);
+      }
+      angles.forEach((angle) => {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        const [x, y] = pointAt(cx, cy, angle, radius).split(",");
+        line.setAttribute("x1", String(cx));
+        line.setAttribute("y1", String(cy));
+        line.setAttribute("x2", x);
+        line.setAttribute("y2", y);
+        line.setAttribute("class", "radar-spoke");
+        svg.appendChild(line);
+      });
+      const area = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+      area.setAttribute("points", items.map((item, index) => pointAt(cx, cy, angles[index], radius * (item.score / 10))).join(" "));
+      area.setAttribute("class", "radar-area");
+      svg.appendChild(area);
+
+      items.forEach((item, index) => {
+        const [px, py] = pointAt(cx, cy, angles[index], radius * (item.score / 10)).split(",");
+        const point = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        point.setAttribute("cx", px);
+        point.setAttribute("cy", py);
+        point.setAttribute("r", "4.6");
+        point.setAttribute("class", "radar-point");
+        svg.appendChild(point);
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const [lx, ly] = pointAt(cx, cy, angles[index], radius + 28).split(",");
+        label.setAttribute("x", lx);
+        label.setAttribute("y", ly);
+        label.setAttribute("text-anchor", labelAnchor(angles[index]));
+        label.setAttribute("class", "radar-axis-label");
+        label.textContent = item.radar;
+        svg.appendChild(label);
+
+        const scoreText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const [sx, sy] = pointAt(cx, cy, angles[index], radius * (item.score / 10) + 18).split(",");
+        scoreText.setAttribute("x", sx);
+        scoreText.setAttribute("y", sy);
+        scoreText.setAttribute("text-anchor", labelAnchor(angles[index]));
+        scoreText.setAttribute("class", "radar-score-label");
+        scoreText.textContent = `${Math.round(item.score)}/10`;
+        svg.appendChild(scoreText);
+      });
+    }
+
+    function pointAt(cx, cy, angle, radius) {
+      return `${(cx + Math.cos(angle) * radius).toFixed(1)},${(cy + Math.sin(angle) * radius).toFixed(1)}`;
+    }
+
+    function labelAnchor(angle) {
+      const cos = Math.cos(angle);
+      if (cos > 0.35) return "start";
+      if (cos < -0.35) return "end";
+      return "middle";
+    }
+
+    function renderDimensionList(items, commentaries) {
+      const wrap = $("dimension-list");
+      wrap.innerHTML = "";
+      const commentaryMap = new Map((commentaries || []).map((item) => [String(item.key || ""), item]));
+      for (const item of items) {
+        const row = document.createElement("div");
+        row.className = "dimension-item";
+        row.innerHTML = `
+          <div class="dimension-name"></div>
+          <div class="dimension-copy"></div>
+          <div class="dimension-score"></div>
+        `;
+        row.querySelector(".dimension-name").textContent = item.label;
+        row.querySelector(".dimension-copy").textContent = (commentaryMap.get(item.key)?.commentary) || item.evidence[0] || item.concerns[0] || item.desc;
+        row.querySelector(".dimension-score").textContent = `${Math.round(item.score)}/10`;
+        wrap.appendChild(row);
+      }
+    }
+
+    function renderPlanSection(report, items) {
+      const tagsWrap = $("plan-tags");
+      tagsWrap.innerHTML = "";
+      const tags = report.learningPlan?.tags?.length
+        ? report.learningPlan.tags
+        : []
+            .concat((report.weaknesses || []).slice(0, 2))
+            .concat((report.recommendations || []).slice(0, 2));
+      for (const text of tags.slice(0, 4)) {
+        const tag = document.createElement("span");
+        tag.className = "plan-tag";
+        tag.textContent = text.length > 18 ? `${text.slice(0, 18)}…` : text;
+        tagsWrap.appendChild(tag);
+      }
+
+      const weakest = [...items].sort((a, b) => a.score - b.score)[0];
+      const phases = report.learningPlan?.phases?.length
+        ? report.learningPlan.phases.map((phase) => ({
+            title: phase.title || "阶段计划",
+            period: phase.window ? `(${phase.window})` : "",
+            points: Array.isArray(phase.items) && phase.items.length ? phase.items : ["继续补充训练内容。"],
+          }))
+        : [
+            {
+              title: "立即行动",
+              period: "(1-2周)",
+              points: [
+                `针对“${(report.weaknesses || [])[0] || "表达完整度"}”做一次专项复盘。`,
+                `围绕${weakest ? weakest.label : "薄弱维度"}补充真实案例，确保每个案例都能讲出动作与结果。`,
+                (report.recommendations || [])[0] || "按背景、目标、动作、结果的顺序复盘案例。"
+              ]
+            },
+            {
+              title: "短期目标",
+              period: "(1个月)",
+              points: [
+                "每周完整模拟一场面试，重点训练开场自我介绍、项目经历和追问应对。",
+                "把高频问题整理成题库，逐步补齐结构化表达与业务视角。",
+                "录音复盘自己的回答，检查是否存在过短、跳跃或缺证据的问题。"
+              ]
+            },
+            {
+              title: "中期规划",
+              period: "(2-3个月)",
+              points: [
+                "形成 1 套稳定的代表项目讲述模板，覆盖背景、目标、关键动作、结果与复盘。",
+                "针对目标岗位持续补充更有说服力的案例，提升岗位契合度。",
+                "定期回看本报告中的低分维度，逐项修正并验证改进效果。"
+              ]
+            }
+          ];
+
+      const wrap = $("plan-steps");
+      wrap.innerHTML = "";
+      for (const phase of phases) {
+        const block = document.createElement("div");
+        block.className = "plan-phase";
+        block.innerHTML = `<h3>${phase.title}<span>${phase.period}</span></h3><ul></ul>`;
+        const ul = block.querySelector("ul");
+        phase.points.forEach((point) => {
+          const li = document.createElement("li");
+          li.textContent = point;
+          ul.appendChild(li);
+        });
+        wrap.appendChild(block);
+      }
+    }
+
+    function renderQaList(qaAnalyses, transcript, items) {
+      const records = Array.isArray(qaAnalyses) && qaAnalyses.length
+        ? qaAnalyses.map((item) => ({
+            question: item.question || "",
+            answer: item.answer || "",
+            kind: "主问题",
+            strengths: item.strengths || [],
+            risks: item.risks || [],
+            commentary: item.commentary || "",
+            approach: item.approach || [],
+            referenceAnswer: item.referenceAnswer || "",
+            questionIndex: item.questionIndex || 0,
+          }))
+        : buildQaRecords(transcript || []);
+      $("qa-total").textContent = `共 ${records.length} 题`;
+      const weakest = [...items].sort((a, b) => a.score - b.score)[0];
+      const wrap = $("qa-list");
+      wrap.innerHTML = "";
+      records.forEach((record, index) => {
+        const score = estimateQaScore(record);
+        const item = document.createElement("article");
+        item.className = "qa-item";
+        item.innerHTML = `
+          <div class="qa-item-head">
+            <span class="qa-item-badge"></span>
+            <span class="qa-item-score"></span>
+          </div>
+          <div class="qa-prompt"></div>
+          <div class="qa-answer-wrap"></div>
+          <div class="qa-two-col">
+            <div class="qa-chip-card good">
+              <h4>优点</h4>
+              <ul class="qa-good-list"></ul>
+            </div>
+            <div class="qa-chip-card warn">
+              <h4>待改进</h4>
+              <ul class="qa-warn-list"></ul>
+            </div>
+          </div>
+          <div class="qa-analysis">
+            <h4>面试官点评与参考思路</h4>
+            <p class="qa-analysis-text"></p>
+          </div>
+        `;
+        item.querySelector(".qa-item-badge").textContent = `第 ${record.questionIndex || index + 1} 题`;
+        item.querySelector(".qa-item-score").textContent = `${score}/10分`;
+        item.querySelector(".qa-prompt").textContent = `【${record.kind}】${record.question}`;
+        item.querySelector(".qa-answer-wrap").textContent = `你的回答：${record.answer || "本题未形成有效回答。"}`;
+        fillMiniList(item.querySelector(".qa-good-list"), buildQaStrengths(record));
+        fillMiniList(item.querySelector(".qa-warn-list"), buildQaWeaknesses(record, weakest));
+        item.querySelector(".qa-analysis-text").textContent = buildQaAnalysis(record, score);
+        wrap.appendChild(item);
+      });
+    }
+
+    function buildQaRecords(transcript) {
+      const records = [];
+      let current = null;
+      for (const turn of transcript || []) {
+        if (turn.role === "interviewer" && ["main_question", "follow_up", "question", "self_intro"].includes(turn.type)) {
+          if (current) records.push(current);
+          current = { question: turn.text || "", answerParts: [], kind: turn.type === "follow_up" ? "追问" : "主问题" };
+          continue;
+        }
+        if (!current) continue;
+        if (turn.role === "candidate" && turn.type === "answer") current.answerParts.push(turn.text || "");
+      }
+      if (current) records.push(current);
+      return records.map((item) => ({
+        question: item.question,
+        answer: item.answerParts.join("\n").trim(),
+        kind: item.kind,
+      }));
+    }
+
+    function estimateQaScore(record) {
+      if (typeof record.score === "number") return Math.max(0, Math.min(10, Math.round(record.score * 2)));
+      const len = (record.answer || "").length;
+      if (!len) return 0;
+      if (len >= 120) return 8;
+      if (len >= 70) return 6;
+      if (len >= 30) return 4;
+      return 2;
+    }
+
+    function buildQaStrengths(record) {
+      if (record.strengths && record.strengths.length) return record.strengths;
+      const result = [];
+      if (record.answer) result.push("有正面回应题目，没有完全跳过。");
+      if ((record.answer || "").length >= 50) result.push("回答中包含了一定信息量和细节。");
+      if (record.kind === "追问") result.push("能够继续接住追问，说明有一定延展回答能力。");
+      return result.length ? result : ["无"];
+    }
+
+    function buildQaWeaknesses(record, weakest) {
+      if (record.risks && record.risks.length) return record.risks;
+      const result = [];
+      if (!record.answer) return ["本题没有形成有效回答。"];
+      if ((record.answer || "").length < 40) result.push("回答偏短，信息密度不足。");
+      if ((record.answer || "").length < 80) result.push("缺少背景、动作、结果的完整闭环。");
+      if (weakest) result.push(`需要进一步补强“${weakest.label}”相关能力。`);
+      return result.slice(0, 3);
+    }
+
+    function buildQaAnalysis(record, score) {
+      // 真实评价 + 具体参考思路融合。后端已让 LLM 输出该字段，仅在 fallback 时由前端兜底。
+      if (record.commentary) return record.commentary;
+      const answer = (record.answer || "").trim();
+      const question = (record.question || "").trim();
+      const kind = record.kind || "主问题";
+      if (!answer) {
+        return `【面试官点评】本题候选人未形成有效回答，态度比较敷衍。\n\n` +
+          `【参考思路】针对${kind}，建议先复述题目的考察点，再以「背景—目标—动作—结果—复盘」的结构给出一个真实案例；` +
+          `若确实没有对应经历，也应说明当时的处理方式与思考过程，而不是直接沉默。`;
+      }
+      const answerLen = answer.length;
+      const topicHint = question ? `围绕「${question.slice(0, 30)}${question.length > 30 ? "…" : ""}」` : "针对本题";
+      if (score >= 8) {
+        return `【面试官点评】候选人${topicHint}的回答相对完整，主线清楚、关键事实可被验证，` +
+          `已具备一定的说服力与判断力；但在量化结果、方案取舍和复盘机制上还有可以再深一寸的地方。\n\n` +
+          `【参考思路】可以继续沿用「背景—目标—动作—结果—复盘」的结构，下一次主动补齐三类信息：` +
+          `① 当时面对的关键约束或资源限制；② 与替代方案的取舍依据；③ 上线后用哪类指标验证、后续又做了哪些调整。`;
+      }
+      if (score >= 5) {
+        return `【面试官点评】候选人${topicHint}能够围绕问题作答，但信息密度、逻辑层次和细节深度都还停在基础层面，` +
+          `关键判断和结果缺少显式证据，回答容易显得「在理但不可信」。\n\n` +
+          `【参考思路】先把回答压缩到 2~3 句最核心结论，再补三类支撑：` +
+          `① 真实场景/时间/角色；② 关键动作里你具体做了什么、为什么这样做；③ 用一个数字结果或用户反馈来证明。`;
+      }
+      if (answerLen < 40) {
+        return `【面试官点评】候选人${topicHint}虽然有回应，但内容过短、信息量过少，暂时不足以支撑进一步评估。\n\n` +
+          `【参考思路】即使是简答，也建议包含「背景、动作、结果」三个最小要素，至少让面试官能判断你做过这件事、怎么做的、结果如何。`;
+      }
+      return `【面试官点评】候选人${topicHint}有回应但缺少关键证据和完整闭环，回答里看不到背景、关键动作和结果之间的因果关系。\n\n` +
+        `【参考思路】先确定一个最接近的真实案例，按「我面对什么情境 → 我做了什么关键决定 → 得到了什么结果」来讲；` +
+        `同时补一个可以量化的结果或用户反馈，避免只停留在描述动作。`;
+    }
+
+    function fillMiniList(ul, items) {
+      ul.innerHTML = "";
+      (items || []).forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+    }
+
+    function shorten(text, max) {
+      const value = String(text || "");
+      return value.length > max ? `${value.slice(0, max)}…` : value;
+    }
+
+    document.querySelectorAll("[data-scene]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-scene]").forEach((node) => node.classList.toggle("active", node === btn));
+        render(btn.dataset.scene);
+      });
+    });
+
+    $("copy-link-btn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(location.href);
+        $("copy-link-btn").textContent = "已复制";
+        setTimeout(() => { $("copy-link-btn").textContent = "复制调试链接"; }, 1200);
+      } catch {
+        $("copy-link-btn").textContent = "复制失败";
+        setTimeout(() => { $("copy-link-btn").textContent = "复制调试链接"; }, 1200);
+      }
+    });
+
+    render("pm");
+  </script>
+</body>
+</html>

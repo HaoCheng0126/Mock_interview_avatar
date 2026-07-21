@@ -8,6 +8,7 @@ import logging
 import os
 import traceback
 
+import certifi
 from dashscope.audio.qwen_omni import (
     MultiModality,
     OmniRealtimeCallback,
@@ -15,11 +16,18 @@ from dashscope.audio.qwen_omni import (
 )
 from dashscope.audio.qwen_omni.omni_realtime import TranscriptionParams
 
+# Python.org framework builds on macOS may not inherit the Keychain CA store.
+# Both websocket-client (DashScope) and websockets (LiveAvatar channel) need an
+# explicit trusted bundle in that environment; TLS verification stays enabled.
+os.environ.setdefault("WEBSOCKET_CLIENT_CA_BUNDLE", certifi.where())
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
 DASHSCOPE_ASR_MODEL = os.getenv("DASHSCOPE_ASR_MODEL", "qwen3-asr-flash-realtime")
 DASHSCOPE_ASR_URL = os.getenv(
     "DASHSCOPE_ASR_URL", "wss://dashscope.aliyuncs.com/api-ws/v1/realtime"
 )
+DASHSCOPE_CONNECT_TIMEOUT = float(os.getenv("DASHSCOPE_CONNECT_TIMEOUT", "12"))
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +77,21 @@ class QwenAsrManager:
     async def connect(self) -> None:
         if not DASHSCOPE_API_KEY:
             raise RuntimeError("DASHSCOPE_API_KEY is not set")
+        try:
+            silence_ms = int(os.getenv("INTERVIEW_ASR_SILENCE_DURATION_MS", "750"))
+        except Exception:
+            silence_ms = 750
+        try:
+            prefix_ms = int(os.getenv("INTERVIEW_ASR_PREFIX_PADDING_MS", "800"))
+        except Exception:
+            prefix_ms = 800
+        try:
+            vad_threshold = float(os.getenv("INTERVIEW_ASR_VAD_THRESHOLD", "0.4"))
+        except Exception:
+            vad_threshold = 0.4
+        silence_ms = min(4000, max(600, silence_ms))
+        prefix_ms = min(2000, max(0, prefix_ms))
+        vad_threshold = min(0.9, max(0.1, vad_threshold))
         self._loop = asyncio.get_running_loop()
         self._closed = False
         callback = AsrCallback(
@@ -88,21 +111,42 @@ class QwenAsrManager:
         )
         callback.conversation = conversation
         self._conversation = conversation
-        await self._loop.run_in_executor(None, conversation.connect)
-        conversation.update_session(
-            output_modalities=[MultiModality.TEXT],
-            enable_turn_detection=True,
-            turn_detection_type="server_vad",
-            turn_detection_threshold=0.3,
-            turn_detection_silence_duration_ms=800,
-            turn_detection_prefix_padding_ms=600,
-            enable_input_audio_transcription=True,
-            transcription_params=TranscriptionParams(
-                language="zh", sample_rate=16000, input_audio_format="pcm"
+        await asyncio.wait_for(
+            self._loop.run_in_executor(None, conversation.connect),
+            timeout=DASHSCOPE_CONNECT_TIMEOUT,
+        )
+        await asyncio.wait_for(
+            self._loop.run_in_executor(
+                None,
+                lambda: conversation.update_session(
+                    output_modalities=[MultiModality.TEXT],
+                    enable_turn_detection=True,
+                    turn_detection_type="server_vad",
+                    turn_detection_threshold=vad_threshold,
+                    turn_detection_silence_duration_ms=silence_ms,
+                    turn_detection_prefix_padding_ms=prefix_ms,
+                    enable_input_audio_transcription=True,
+                    transcription_params=TranscriptionParams(
+                        language="zh",
+                        sample_rate=16000,
+                        input_audio_format="pcm",
+                        # Interview ASR is deliberately context-free.  Job titles,
+                        # JD, resume, question bank and prompts belong to the LLM
+                        # path only and must never bias candidate transcription.
+                        corpus_text=None,
+                    ),
+                ),
             ),
+            timeout=DASHSCOPE_CONNECT_TIMEOUT,
         )
         self._reconnect_attempts = 0
-        logger.info("🎤 Qwen ASR connected (interview mode, silence=800ms, prefix=600ms)")
+        logger.info(
+            "🎤 Qwen ASR connected (pure PCM interview mode, silence=%sms, "
+            "prefix=%sms, vad=%s)",
+            silence_ms,
+            prefix_ms,
+            vad_threshold,
+        )
 
     def feed_audio(self, pcm_bytes: bytes) -> None:
         if self._conversation:

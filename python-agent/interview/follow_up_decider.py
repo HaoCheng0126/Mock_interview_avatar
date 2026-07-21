@@ -1,9 +1,26 @@
 from __future__ import annotations
 
 import json
+import asyncio
 
 from interview.models import Evaluation, FollowUpDecision, QuestionSpec, TranscriptTurn
 from interview.prompts import DEFAULT_FOLLOW_UP_DECIDER_PROMPT, render_template
+
+
+def _normalize_question_text(text: str) -> str:
+    out = (text or "").strip()
+    if not out:
+        return out
+    first_marks = [i for i in (out.find("？"), out.find("?")) if i >= 0]
+    if not first_marks:
+        return out
+    first = min(first_marks)
+    tail = out[first + 1 :]
+    if "？" in tail or "?" in tail:
+        return out[: first + 1].strip()
+    if out[first] == "?":
+        return (out[:first] + "？").strip()
+    return out
 
 
 class FollowUpDecider:
@@ -43,14 +60,15 @@ class FollowUpDecider:
                 transcript=transcript,
                 probe_index=probe_index,
             )
-            raw = await self._llm.generate(prompt, max_tokens=512)
+            raw = await asyncio.wait_for(
+                self._llm.generate_once(prompt, max_tokens=256), timeout=2.5
+            )
             data = json.loads(raw)
             return FollowUpDecision(
                 needed=bool(data.get("needed")),
-                reason=str(data.get("reason") or ""),
-                missing_signal=str(data.get("missingSignal") or ""),
-                follow_up_type=str(data.get("followUpType") or "skip"),
-                suggested_question=str(data.get("suggestedQuestion") or ""),
+                suggested_question=_normalize_question_text(
+                    str(data.get("suggestedQuestion") or "")
+                ),
             )
         except Exception:
             return self.decide(
@@ -74,6 +92,11 @@ class FollowUpDecider:
         if max_followups is not None and probe_index >= max_followups:
             return FollowUpDecision(needed=False)
 
+        # Self-intro and project-intro are intentionally non-probing stages: use them
+        # to open the conversation and collect context, not to dig deeper immediately.
+        if question.section_id in {"self_intro", "resume_project_intro"}:
+            return FollowUpDecision(needed=False)
+
         answer = answer_text.strip()
         missing_signal = self._first_missing_signal(question, answer)
         weak_score = bool(evaluation and evaluation.score > 0 and evaluation.score <= 2)
@@ -85,16 +108,10 @@ class FollowUpDecider:
             return FollowUpDecision(needed=False)
 
         if weak_score or has_weakness or evaluator_requested or missing_signal:
-            reason = self._reason(question, evaluation, missing_signal, transcript)
-            return FollowUpDecision(
-                needed=True,
-                reason=reason,
-                missing_signal=missing_signal,
-                follow_up_type="deepen" if answer else "clarify",
-                suggested_question=(
-                    evaluation.follow_up_question.strip() if evaluation else ""
-                ),
-            )
+            suggested = evaluation.follow_up_question.strip() if evaluation else ""
+            if not suggested and missing_signal:
+                suggested = f"你刚才提到得比较简略，能具体讲讲{missing_signal}吗？"
+            return FollowUpDecision(needed=True, suggested_question=suggested)
 
         return FollowUpDecision(needed=False)
 
@@ -107,6 +124,7 @@ class FollowUpDecider:
         transcript: list[TranscriptTurn],
         probe_index: int,
     ) -> str:
+        trimmed = list(transcript or [])[-6:]
         turns = [
             {
                 "role": turn.role,
@@ -115,7 +133,7 @@ class FollowUpDecider:
                 "questionId": turn.question_id,
                 "exchangeId": turn.exchange_id,
             }
-            for turn in transcript
+            for turn in trimmed
         ]
         payload = {
             "question": {
@@ -152,25 +170,11 @@ class FollowUpDecider:
         if not answer:
             return question.expected_signals[0] if question.expected_signals else ""
         for signal in question.expected_signals:
-            if signal and signal not in answer:
+            token = (signal or "").strip()
+            if not token:
+                continue
+            # For natural language expected signals, exact-substring matching is too strict.
+            # Only treat short concrete tokens as a hard missing signal.
+            if len(token) <= 8 and token not in answer:
                 return signal
         return ""
-
-    @staticmethod
-    def _reason(
-        question: QuestionSpec,
-        evaluation: Evaluation | None,
-        missing_signal: str,
-        transcript: list[TranscriptTurn],
-    ) -> str:
-        if missing_signal:
-            if question.competency:
-                return f"需要继续验证 {question.competency}，回答还缺少关于 {missing_signal} 的信息。"
-            return f"回答还缺少关于 {missing_signal} 的信息。"
-        if evaluation and evaluation.weaknesses:
-            return evaluation.weaknesses[0]
-        if question.competency:
-            return f"需要继续验证 {question.competency}。"
-        if transcript:
-            return "需要结合前面对话继续核实回答细节。"
-        return "需要继续核实回答细节。"

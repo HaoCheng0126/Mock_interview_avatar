@@ -1,0 +1,45 @@
+{
+  "selection_mode": "candidate_choice",
+  "locked_avatar": "default",
+  "avatars": [
+    {
+      "slug": "default",
+      "name": "陈珊",
+      "direction": "综合面试",
+      "avatar_id": "avatar_01kx0w396myy30axzwtxfye6b0",
+      "voice_id": "",
+      "voice_speed": "1.1",
+      "poster_url": "",
+      "usage_type": "practice",
+      "default_role": "",
+      "default_jd": "",
+      "profile_locked": false
+    },
+    {
+      "slug": "avatar-i62mt",
+      "name": "王磊",
+      "direction": "综合面试",
+      "avatar_id": "avatar_01kwv7hmnspt825p399ag2xv5g",
+      "voice_id": "",
+      "voice_speed": "1.3",
+      "poster_url": "",
+      "usage_type": "enterprise",
+      "default_role": "",
+      "default_jd": "",
+      "profile_locked": false
+    },
+    {
+      "slug": "avatar-ix4hn",
+      "name": "路飞",
+      "direction": "UI/UX",
+      "avatar_id": "avatar_01kweerae92hd23hasd8bcxr9s",
+      "voice_id": "",
+      "voice_speed": "1.1",
+      "poster_url": "",
+      "usage_type": "practice",
+      "default_role": "UI/UX设计师",
+      "default_jd": "岗位职责：\n负责产品整体界面视觉设计、交互流程设计，输出高保真原型、UI 设计稿、切图及设计规范，保证产品体验一致性与美观度。\n参与产品需求评审，从用户体验角度提出专业建议，优化操作流程、信息架构与交互逻辑，提升易用性与转化率。\n独立完成移动端 APP、网页、后台管理系统等界面设计，跟进开发还原，确保设计效果精准落地。\n收集用户反馈、竞品体验与行业趋势，持续迭代界面与交互，推动产品体验升级。\n建立与维护设计组件库、设计规范，提升团队设计效率与输出质量。\n配合产品、前端、开发、测试完成项目全流程，输出标注、切图、交互说明等交付物。\n岗位要求：\n大学及以上学历，设计类相关专业优先，1 年以上 UI/UX 设计相关工作经验，有完整上线项目作品。\n精通 Figma/Sketch/PS/AE 等设计工具，具备扎实的视觉设计、排版、色彩、图标与界面功底。\n具备独立交互设计能力：能梳理用户流程、绘制原型、做体验优化，理解用户心智与行为逻辑。\n熟悉移动端 / 网页 / 后台设计规范，了解前端实现逻辑，能高效与开发协作还原设计。\n有良好的审美、细节把控力、自驱力与沟通能力，能承受项目节奏，对体验有追求。\n投递请附作品集（链接 / 附件），有作品集优先安排面试。",
+      "profile_locked": true
+    }
+  ]
+}

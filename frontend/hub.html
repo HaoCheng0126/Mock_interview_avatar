@@ -85,8 +85,8 @@
     transition: border-color .15s;
   }
   .field select { appearance: auto; }
-  .asr-group { display: none; }
-  .asr-group.show { display: block; }
+  .asr-group, .llm-group { display: none; }
+  .asr-group.show, .llm-group.show { display: block; }
   .test-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
   .test-result { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
   .test-result.ok { color: var(--green); }
@@ -161,6 +161,36 @@
   }
   .agent-actions .port input:focus { outline: none; border-color: var(--accent); }
   .agent-actions .spacer { flex: 1; }
+  .avatar-row { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; background: var(--bg); }
+  .avatar-row .ar-foot { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .avatar-row .ar-slug { font-size: 10.5px; color: var(--text-dim); }
+  .avatar-row .ar-foot .spacer { flex: 1; }
+  .avatar-row .edit-link { font-size: 12px; color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .avatar-row .edit-link:hover { text-decoration: underline; }
+  .roster-actions { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .roster-actions .spacer { flex: 1; }
+  button.small { padding: 5px 10px; font-size: 11px; }
+  .iv-card { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; background: var(--bg); }
+  .iv-card .iv-main { flex: 1; min-width: 0; }
+  .iv-card .iv-name { font-size: 14px; font-weight: 600; }
+  .iv-card .iv-dir { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .iv-card .iv-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .iv-card .iv-actions a { font-size: 12px; color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .iv-card .iv-actions a:hover { text-decoration: underline; }
+  .iv-card .iv-actions a.disabled { color: var(--text-dim); pointer-events: none; }
+  details.settings > summary { list-style: none; user-select: none; }
+  details.settings > summary::-webkit-details-marker { display: none; }
+  details.settings > summary::before { content: "▸ "; }
+  details.settings[open] > summary::before { content: "▾ "; }
+  #svc-strip { display: flex; align-items: center; gap: 10px; }
+  .svc-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+  .svc-dot.on { background: #34d399; box-shadow: 0 0 8px rgba(52,211,153,.7); }
+  .svc-dot.off { background: #f87171; }
+  #svc-strip .spacer { flex: 1; }
+  #svc-strip a { font-size: 12px; color: var(--accent); text-decoration: none; }
+  #svc-strip a.disabled { color: var(--text-dim); pointer-events: none; }
+  .svc-debug { margin-top: 10px; }
+  .svc-debug > summary { font-size: 11px; color: var(--text-dim); cursor: pointer; }
   .agent-actions a {
     font-size: 12px; color: var(--accent); text-decoration: none;
     padding: 8px 10px;
@@ -177,6 +207,68 @@
     max-height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
   }
   .agent-logs.open { display: block; }
+  .toolbar-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .toolbar-row .spacer { flex: 1; }
+  .inline-status { font-size: 11px; color: var(--text-dim); }
+  .report-modules { display: grid; gap: 12px; }
+  .report-module {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    background: var(--bg);
+    display: grid;
+    gap: 8px;
+  }
+  .report-module h3 {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .report-module p {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .report-module textarea {
+    width: 100%;
+    min-height: 160px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 10px 12px;
+    line-height: 1.7;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    transition: border-color .15s;
+    display: block;
+  }
+  .report-module textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .report-preview {
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-dim);
+    font-size: 11px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    max-height: 260px;
+    overflow: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .link-btn {
+    font-size: 12px; color: var(--accent); text-decoration: none;
+  }
+  .link-btn:hover { text-decoration: underline; }
+  .link-btn.disabled { color: var(--text-dim); pointer-events: none; text-decoration: none; }
 
   #toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
@@ -200,14 +292,42 @@
 
 <div id="topbar">
   <h1>🎛 Live Avatar — 控制台</h1>
-  <span class="sub">后端配置 · Agent 管理</span>
+  <span class="sub">面试官 · 全局设置</span>
   <span class="spacer"></span>
+  <a href="/enterprise-interviews">企业面试管理 →</a>
 </div>
 
 <div id="layout">
   <!-- ================= 左列：配置 ================= -->
   <section>
-    <div class="col-title">后端配置</div>
+    <div class="col-title">面试官</div>
+
+    <div class="card">
+      <div class="card-head"><h2>面试官名册</h2><span class="hint">每位一套形象＋人设＋题库</span></div>
+      <div class="card-body">
+        <div class="row2">
+          <div class="field">
+            <label for="roster-mode">候选人如何选面试官</label>
+            <select id="roster-mode" onchange="savePolicy()">
+              <option value="candidate_choice">候选人自选</option>
+              <option value="locked">锁定到指定面试官</option>
+            </select>
+          </div>
+          <div class="field" id="locked-field" style="display:none">
+            <label for="roster-locked">锁定的面试官</label>
+            <select id="roster-locked" onchange="savePolicy()"></select>
+          </div>
+        </div>
+        <div id="interviewer-list"></div>
+        <div class="roster-actions">
+          <button type="button" onclick="createInterviewer()">＋ 新建面试官</button>
+        </div>
+        <div class="note">新建后点该面试官的「编辑」填写形象、人设、题库、话术。策略改动即时保存，无需重启。</div>
+      </div>
+    </div>
+
+    <details class="settings">
+      <summary class="col-title" style="cursor:pointer;margin:18px 0 10px">全局设置（LLM · ASR · 平台凭证）</summary>
 
     <div class="card">
       <div class="card-head"><h2>平台接入</h2><span class="hint">LiveAvatar 数字人平台</span></div>
@@ -216,16 +336,6 @@
           <label for="platform-api_key">API Key</label>
           <input id="platform-api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="lk_live_...">
           <div class="note">已保存的密钥显示为 ••••尾号，重新输入才会覆盖，清空则删除</div>
-        </div>
-        <div class="row2">
-          <div class="field">
-            <label for="platform-avatar_id">Avatar ID（形象）</label>
-            <input id="platform-avatar_id" class="mono" spellcheck="false" placeholder="avatar_...">
-          </div>
-          <div class="field">
-            <label for="platform-voice_id">Voice ID（音色，可选）</label>
-            <input id="platform-voice_id" class="mono" spellcheck="false" placeholder="留空用形象默认音色">
-          </div>
         </div>
         <div class="row2">
           <div class="field">
@@ -240,11 +350,7 @@
             </select>
           </div>
         </div>
-        <div class="field">
-          <label for="platform-voice_speed">语速（0.5–2.0，留空用默认）</label>
-          <input id="platform-voice_speed" class="mono" type="number" step="0.1" min="0.5" max="2" placeholder="1.0">
-          <div class="note">⚠️ 前提：数字人需在 LiveAvatar 控制台开启平台 TTS（ttsProvider=platform 并配置音色），否则文本回复不会驱动数字人说话</div>
-        </div>
+        <div class="note">每位面试官默认继承这里的平台地址、环境与 API Key；如需接入另一套 LiveAvatar 账户，可在该面试官的「编辑」页切换为独立平台配置。Avatar ID、音色、语速和连接测试也在编辑页设置。</div>
       </div>
     </div>
 
@@ -252,17 +358,45 @@
       <div class="card-head"><h2>大模型 LLM</h2><span class="hint">文字回复生成（OpenAI 兼容）</span></div>
       <div class="card-body">
         <div class="field">
-          <label for="llm-api_key">API Key</label>
-          <input id="llm-api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
+          <label for="llm-provider">当前提供方</label>
+          <select id="llm-provider" onchange="onLlmProviderChange()">
+            <option value="deepseek">DeepSeek</option>
+            <option value="volcengine">火山方舟（豆包）</option>
+          </select>
+          <div class="note">两套配置独立保存。切换提供方不会覆盖另一套密钥、地址或模型。</div>
         </div>
-        <div class="row2">
+
+        <div class="llm-group" data-provider="deepseek">
           <div class="field">
-            <label for="llm-base_url">Base URL</label>
-            <input id="llm-base_url" class="mono" spellcheck="false" placeholder="https://api.deepseek.com">
+            <label for="llm-deepseek-api_key">DeepSeek API Key</label>
+            <input id="llm-deepseek-api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
           </div>
+          <div class="row2">
+            <div class="field">
+              <label for="llm-deepseek-base_url">Base URL</label>
+              <input id="llm-deepseek-base_url" class="mono" spellcheck="false" placeholder="https://api.deepseek.com">
+            </div>
+            <div class="field">
+              <label for="llm-deepseek-model">模型</label>
+              <input id="llm-deepseek-model" class="mono" spellcheck="false" placeholder="deepseek-v4-flash">
+            </div>
+          </div>
+        </div>
+
+        <div class="llm-group" data-provider="volcengine">
           <div class="field">
-            <label for="llm-model">模型</label>
-            <input id="llm-model" class="mono" spellcheck="false" placeholder="deepseek-v4-flash">
+            <label for="llm-volcengine-api_key">火山方舟 API Key</label>
+            <input id="llm-volcengine-api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="ark-...">
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="llm-volcengine-base_url">Base URL</label>
+              <input id="llm-volcengine-base_url" class="mono" spellcheck="false" placeholder="https://ark.cn-beijing.volces.com/api/v3">
+            </div>
+            <div class="field">
+              <label for="llm-volcengine-model">模型</label>
+              <input id="llm-volcengine-model" class="mono" spellcheck="false" placeholder="doubao-seed-2-1-turbo-260628">
+            </div>
           </div>
         </div>
         <div class="test-row">
@@ -277,7 +411,7 @@
       <div class="card-body">
         <div class="field">
           <label for="asr-provider">识别服务</label>
-          <select id="asr-provider" onchange="onProviderChange()">
+          <select id="asr-provider" onchange="onAsrProviderChange()">
             <option value="volcengine">火山引擎（豆包语音）</option>
             <option value="dashscope">阿里百炼 DashScope Qwen</option>
           </select>
@@ -326,14 +460,81 @@
 
     <div id="save-bar">
       <button class="primary" id="save-btn" onclick="saveConfig()">保存配置</button>
-      <span id="save-note">保存后在 agent 下次启动时生效</span>
+      <span id="save-note">保存后在面试服务下次启动时生效</span>
     </div>
+    </details>
   </section>
 
-  <!-- ================= 右列：agents ================= -->
+  <!-- ================= 右列：面试服务 ================= -->
   <section>
-    <div class="col-title">Agents</div>
-    <div id="agent-list"></div>
+    <div class="col-title">面试服务</div>
+    <div class="card">
+      <div class="card-head"><h2>面试服务</h2><span class="hint">候选人从这里进入</span></div>
+      <div class="card-body">
+        <div id="svc-strip">
+          <span class="svc-dot" id="svc-dot"></span>
+          <span id="svc-text">检测中…</span>
+          <span class="spacer"></span>
+          <a id="svc-open" class="disabled">打开面试页 ↗</a>
+          <button id="svc-toggle" onclick="toggleService()">—</button>
+        </div>
+        <div class="note">一个面试服务承载所有面试官——候选人进入后按名册自选或锁定，无需为每位面试官单开服务。</div>
+        <details class="svc-debug">
+          <summary>调试日志</summary>
+          <pre id="svc-logs" class="agent-logs open"></pre>
+        </details>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>报告提示词</h2><span class="hint">把书面模拟面试报告的生成模板直接放在这里维护</span></div>
+      <div class="card-body">
+        <div class="field">
+          <label for="report-llm-provider">报告专用模型</label>
+          <select id="report-llm-provider" onchange="onReportLlmProviderChange()">
+            <option value="deepseek">DeepSeek（推荐用于报告）</option>
+            <option value="volcengine">火山方舟（豆包）</option>
+          </select>
+          <div class="note" id="report-llm-note">报告与实时面试可使用不同模型；若所选模型未配置密钥，会临时使用当前对话模型。</div>
+          <div class="field" style="margin-top:14px">
+            <label for="report-llm-api_key">API Key</label>
+            <input id="report-llm-api_key" class="mono" autocomplete="off" spellcheck="false" placeholder="sk-...">
+            <div class="note">已保存的密钥显示为 ••••尾号；这里的配置也会同步到该提供方的全局模型档案。</div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="report-llm-base_url">Base URL</label>
+              <input id="report-llm-base_url" class="mono" spellcheck="false" placeholder="https://api.deepseek.com">
+            </div>
+            <div class="field">
+              <label for="report-llm-model">模型</label>
+              <input id="report-llm-model" class="mono" spellcheck="false" placeholder="deepseek-v4-flash">
+            </div>
+          </div>
+          <div class="test-row">
+            <button id="report-llm-test-btn" onclick="testReportLlm()">测试报告模型</button>
+            <button id="report-llm-save-btn" class="primary" onclick="saveReportLlm()">保存报告模型</button>
+            <span class="test-result" id="report-llm-test-result"></span>
+          </div>
+        </div>
+        <div class="toolbar-row">
+          <span class="inline-status">全局通用</span>
+        </div>
+        <div class="legend" style="margin-top:2px">
+          当前五维：<b>communication_clarity</b>、<b>problem_solving</b>、<b>outcome_orientation</b>、<b>project_execution</b>、<b>role_alignment</b>。
+        </div>
+        <div class="report-modules" id="report-modules"></div>
+        <details>
+          <summary class="inline-status" style="cursor:pointer">查看组装后的完整 prompt 预览</summary>
+          <pre class="report-preview" id="report-prompt-preview"></pre>
+        </details>
+        <div class="toolbar-row">
+          <span class="inline-status" id="report-status">加载中…</span>
+          <span class="spacer"></span>
+          <button type="button" class="primary" id="report-save-btn" onclick="saveReportPrompt()">保存报告提示词</button>
+        </div>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -341,20 +542,29 @@
 
 <script>
 const CONFIG_FIELDS = [
-  ["platform", "api_key"], ["platform", "avatar_id"],
-  ["platform", "voice_id"], ["platform", "base_url"],
-  ["platform", "sandbox"], ["platform", "voice_speed"],
-  ["llm", "api_key"], ["llm", "base_url"], ["llm", "model"],
+  ["platform", "api_key"], ["platform", "base_url"], ["platform", "sandbox"],
   ["asr", "provider"],
   ["asr", "dashscope_api_key"], ["asr", "model"],
   ["asr", "volc_app_id"], ["asr", "volc_access_token"],
   ["asr", "volc_secret_key"], ["asr", "volc_cluster"],
 ];
 const STATUS_TEXT = { running: "运行中", external: "外部运行", stopped: "未启动" };
+const REPORT_PROMPT_MODULE_META = [
+  ["role_and_style", "整体风格与角色", "报告整体口吻。"],
+  ["cover_and_summary", "封面总评", "封面字段与总评。"],
+  ["strengths_and_risks", "关注提醒与核心建议", "优点、提醒、建议。"],
+  ["dimensions_overview", "五维分析总则", "五维评分与证据。"],
+  ["dimension_commentary", "五维点评文案", "五维逐项点评。"],
+  ["learning_plan", "学习规划", "学习标签与阶段计划。"],
+  ["qa_analysis", "逐题解析", "题目解析与参考回答。"],
+  ["output_contract", "输出结构约束", "最终 JSON。"],
+];
 
 let agents = [];
 const openLogs = new Set();
 const busy = new Set();
+let reportPromptDefaults = {};
+let reportPromptCurrent = {};
 
 function $(id) { return document.getElementById(id); }
 
@@ -373,10 +583,145 @@ async function loadConfig() {
   for (const [sec, field] of CONFIG_FIELDS) {
     $(`${sec}-${field}`).value = cfg[sec]?.[field] ?? "";
   }
-  onProviderChange();
+  const llm = cfg.llm || {};
+  $("llm-provider").value = llm.provider || "deepseek";
+  for (const provider of ["deepseek", "volcengine"]) {
+    const profile = llm.profiles?.[provider] || {};
+    for (const field of ["api_key", "base_url", "model"]) {
+      $(`llm-${provider}-${field}`).value = profile[field] ?? "";
+    }
+  }
+  $("report-llm-provider").value = cfg.interview?.report_llm_provider || "deepseek";
+  loadReportLlmFields(cfg);
+  renderReportLlmStatus(cfg);
+  await loadEffectiveReportPrompt(cfg);
+  onLlmProviderChange();
+  onAsrProviderChange();
 }
 
-function onProviderChange() {
+function loadReportLlmFields(cfg) {
+  const provider = $("report-llm-provider").value || "deepseek";
+  const profile = cfg?.llm?.profiles?.[provider] || {};
+  for (const field of ["api_key", "base_url", "model"]) {
+    $(`report-llm-${field}`).value = profile[field] ?? "";
+  }
+  const defaults = {
+    deepseek: ["https://api.deepseek.com", "deepseek-v4-flash"],
+    volcengine: ["https://ark.cn-beijing.volces.com/api/v3", "doubao-seed-2-1-turbo-260628"],
+  };
+  const [baseUrl, model] = defaults[provider] || ["", ""];
+  $("report-llm-base_url").placeholder = baseUrl;
+  $("report-llm-model").placeholder = model;
+}
+
+function renderReportLlmStatus(cfg) {
+  const runtime = cfg?._runtime?.report_llm || {};
+  const names = { deepseek: "DeepSeek", volcengine: "火山方舟" };
+  const note = $("report-llm-note");
+  if (runtime.fallback) {
+    note.textContent = `所选 ${names[runtime.requested_provider] || runtime.requested_provider} 尚未配置密钥，当前报告会临时使用 ${names[runtime.provider] || runtime.provider}（${runtime.model || "当前模型"}）。`;
+  } else {
+    note.textContent = `报告实际使用 ${names[runtime.provider] || runtime.provider}（${runtime.model || ""}），不会影响实时面试模型。`;
+  }
+}
+
+async function loadEffectiveReportPrompt(cfg) {
+  $("report-status").textContent = "加载当前提示词…";
+  reportPromptDefaults = cfg?._defaults?.interview?.report_prompt_modules || {};
+  reportPromptCurrent = getEffectiveReportPromptModules(
+    cfg?.interview?.report_prompt_modules || {}
+  );
+  renderReportPromptModules(reportPromptCurrent);
+  renderReportPromptPreview();
+  $("report-status").textContent = hasCustomReportPromptModules(cfg?.interview)
+    ? "当前为全局自定义报告提示词"
+    : "当前为推荐模板（已写入配置，可直接编辑并保存）";
+}
+
+function hasCustomReportPromptModules(interviewCfg) {
+  const current = interviewCfg?.report_prompt_modules || {};
+  return REPORT_PROMPT_MODULE_META.some(([key]) => {
+    const raw = String(current[key] || "").trim();
+    return raw && raw !== String(reportPromptDefaults[key] || "").trim();
+  });
+}
+
+function getEffectiveReportPromptModules(modules) {
+  const merged = {};
+  for (const [key] of REPORT_PROMPT_MODULE_META) {
+    const raw = String(modules?.[key] || "").trim();
+    merged[key] = raw || String(reportPromptDefaults[key] || "");
+  }
+  return merged;
+}
+
+function renderReportPromptModules(modules) {
+  const wrap = $("report-modules");
+  wrap.innerHTML = "";
+  for (const [key, title, desc] of REPORT_PROMPT_MODULE_META) {
+    const card = document.createElement("div");
+    card.className = "report-module";
+    card.innerHTML = `
+      <h3>${title}</h3>
+      <p>${desc}</p>
+      <textarea spellcheck="false" data-report-module="${key}"></textarea>
+      <div class="toolbar-row" style="margin-top:8px">
+        <span class="inline-status">${key}</span>
+        <span class="spacer"></span>
+      </div>
+    `;
+    const textarea = card.querySelector("textarea");
+    textarea.value = modules?.[key] || reportPromptDefaults[key] || "";
+    textarea.placeholder = `这里填写「${title}」对应的报告提示词`;
+    textarea.addEventListener("input", renderReportPromptPreview);
+    wrap.appendChild(card);
+  }
+}
+
+function collectReportPromptModules() {
+  const modules = {};
+  for (const [key] of REPORT_PROMPT_MODULE_META) {
+    const el = document.querySelector(`[data-report-module="${key}"]`);
+    const raw = el ? String(el.value || "").trim() : "";
+    modules[key] = raw || String(reportPromptDefaults[key] || "");
+  }
+  return modules;
+}
+
+function renderReportPromptPreview() {
+  const modules = collectReportPromptModules();
+  $("report-prompt-preview").textContent = REPORT_PROMPT_MODULE_META
+    .map(([key, title]) => {
+      const text = String(modules[key] || "").trim();
+      return text ? `【${title}】\n${text}` : "";
+    })
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function onLlmProviderChange() {
+  const provider = $("llm-provider").value || "deepseek";
+  for (const group of document.querySelectorAll(".llm-group")) {
+    group.classList.toggle("show", group.dataset.provider === provider);
+  }
+  setTestResult("llm", "", "");
+}
+
+function onReportLlmProviderChange() {
+  setTestResult("report-llm", "", "");
+  const provider = $("report-llm-provider").value || "deepseek";
+  const profile = {};
+  for (const field of ["api_key", "base_url", "model"]) {
+    profile[field] = $(`llm-${provider}-${field}`).value;
+  }
+  loadReportLlmFields({ llm: { profiles: { [provider]: profile } } });
+  const apiKey = $("report-llm-api_key").value;
+  $("report-llm-note").textContent = apiKey
+    ? "保存后，报告将独立使用这套模型配置。"
+    : "该模型尚未填写密钥；保存后报告会临时使用当前对话模型。";
+}
+
+function onAsrProviderChange() {
   const provider = $("asr-provider").value || "dashscope";
   for (const group of document.querySelectorAll(".asr-group")) {
     group.classList.toggle("show", group.dataset.provider === provider);
@@ -401,7 +746,8 @@ async function runTest(kind, path, body) {
     });
     const data = await res.json();
     if (data.success) {
-      const extra = kind === "llm" ? `（${data.latency_ms}ms · ${data.model}）` : "";
+      const extra = (kind === "llm" || kind === "report-llm") ? `（${data.latency_ms}ms · ${data.model}）`
+                  : kind === "platform" ? "（数字人会话可创建，已自动释放）" : "";
       setTestResult(kind, "✅ 连接成功 " + extra, "ok");
     } else {
       setTestResult(kind, "❌ " + (data.error || "连接失败"), "err");
@@ -414,13 +760,71 @@ async function runTest(kind, path, body) {
 }
 
 function testLlm() {
+  const provider = $("llm-provider").value || "deepseek";
   runTest("llm", "/api/config/test-llm", {
     llm: {
-      api_key: $("llm-api_key").value,
-      base_url: $("llm-base_url").value,
-      model: $("llm-model").value,
+      provider,
+      profiles: {
+        [provider]: {
+          api_key: $(`llm-${provider}-api_key`).value,
+          base_url: $(`llm-${provider}-base_url`).value,
+          model: $(`llm-${provider}-model`).value,
+        },
+      },
     },
   });
+}
+
+function testReportLlm() {
+  const provider = $("report-llm-provider").value || "deepseek";
+  runTest("report-llm", "/api/config/test-llm", {
+    llm: {
+      provider,
+      profiles: {
+        [provider]: {
+          api_key: $("report-llm-api_key").value,
+          base_url: $("report-llm-base_url").value,
+          model: $("report-llm-model").value,
+        },
+      },
+    },
+  });
+}
+
+async function saveReportLlm() {
+  const provider = $("report-llm-provider").value || "deepseek";
+  const btn = $("report-llm-save-btn");
+  btn.disabled = true;
+  setTestResult("report-llm", "保存中…", "");
+  try {
+    const res = await fetch("/api/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        llm: {
+          profiles: {
+            [provider]: {
+              api_key: $("report-llm-api_key").value,
+              base_url: $("report-llm-base_url").value,
+              model: $("report-llm-model").value,
+            },
+          },
+        },
+        interview: { report_llm_provider: provider },
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || res.status);
+    setTestResult("report-llm", "✅ 已保存并应用", "ok");
+    toast("✅ 报告模型配置已保存");
+    await loadConfig();
+    await refreshService();
+  } catch (e) {
+    setTestResult("report-llm", "❌ " + e.message, "err");
+    toast("保存失败：" + e.message, false);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function testAsr() {
@@ -451,6 +855,19 @@ async function saveConfig() {
   for (const [sec, field] of CONFIG_FIELDS) {
     (body[sec] ??= {})[field] = $(`${sec}-${field}`).value;
   }
+  body.llm = {
+    provider: $("llm-provider").value || "deepseek",
+    profiles: {},
+  };
+  body.interview = {
+    report_llm_provider: $("report-llm-provider").value || "deepseek",
+  };
+  for (const provider of ["deepseek", "volcengine"]) {
+    body.llm.profiles[provider] = {};
+    for (const field of ["api_key", "base_url", "model"]) {
+      body.llm.profiles[provider][field] = $(`llm-${provider}-${field}`).value;
+    }
+  }
   $("save-btn").disabled = true;
   try {
     const res = await fetch("/api/config", {
@@ -466,7 +883,7 @@ async function saveConfig() {
     else msg += " — 启动 agent 后生效";
     toast(msg);
     await loadConfig();
-    await refreshAgents();
+    await refreshService();
   } catch (e) {
     toast("保存失败：" + e.message, false);
   } finally {
@@ -474,62 +891,184 @@ async function saveConfig() {
   }
 }
 
+// ---- roster (面试官名册) ----
+
+let rosterState = { selection_mode: "candidate_choice", locked_avatar: "", avatars: [] };
+let agentUrl = "";   // interview service URL, for 试面 links
+async function loadRoster() {
+  try { rosterState = await (await fetch("/api/roster")).json(); }
+  catch { return; }
+  renderInterviewers();
+  renderPolicy();
+}
+
+function interviewerCard(a) {
+  const card = document.createElement("div");
+  card.className = "iv-card";
+  const tryUrl = agentUrl ? `${agentUrl}/?avatar=${encodeURIComponent(a.slug)}` : "";
+  card.innerHTML = `
+    <div class="iv-main">
+      <div class="iv-name"></div>
+      <div class="iv-dir"></div>
+    </div>
+    <div class="iv-actions">
+      <a href="/interview-config?avatar=${encodeURIComponent(a.slug)}">编辑</a>
+      <a class="try ${tryUrl ? "" : "disabled"}" ${tryUrl ? `href="${tryUrl}" target="_blank" rel="noopener"` : ""}>试面 ↗</a>
+      <button class="small danger" type="button">删除</button>
+    </div>`;
+  card.querySelector(".iv-name").textContent = a.name || a.slug;
+  card.querySelector(".iv-dir").textContent =
+    `${a.usage_type === "enterprise" ? "企业招聘" : "C 端训练"} · ${a.direction || "（未填方向）"}`;
+  card.querySelector("button").onclick = () => deleteInterviewer(a.slug);
+  return card;
+}
+
+function renderInterviewers() {
+  const wrap = $("interviewer-list");
+  wrap.innerHTML = "";
+  for (const a of rosterState.avatars) wrap.appendChild(interviewerCard(a));
+}
+
+function renderPolicy() {
+  $("roster-mode").value = rosterState.selection_mode;
+  const sel = $("roster-locked");
+  sel.innerHTML = "";
+  for (const a of rosterState.avatars) {
+    const opt = document.createElement("option");
+    opt.value = a.slug;
+    opt.textContent = a.name || a.slug;
+    sel.appendChild(opt);
+  }
+  sel.value = rosterState.locked_avatar;
+  $("locked-field").style.display = rosterState.selection_mode === "locked" ? "" : "none";
+}
+
+async function saveReportPrompt() {
+  $("report-save-btn").disabled = true;
+  $("report-status").textContent = "保存中…";
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    cfg.interview = {
+      ...(cfg.interview || {}),
+      report_prompt_modules: collectReportPromptModules(),
+    };
+    const res = await fetch("/api/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cfg),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || res.status);
+    $("report-status").textContent = "已保存为全局通用提示词";
+    toast("✅ 报告提示词已保存");
+    await loadConfig();
+    await refreshService();
+  } catch (e) {
+    $("report-status").textContent = "保存失败：" + e.message;
+    toast("保存失败：" + e.message, false);
+  } finally {
+    $("report-save-btn").disabled = false;
+  }
+}
+
+async function savePolicy() {
+  const body = { ...rosterState, selection_mode: $("roster-mode").value, locked_avatar: $("roster-locked").value };
+  try {
+    const res = await fetch("/api/roster", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || res.status);
+    rosterState = data.roster;
+    renderPolicy();
+    toast("✅ 策略已保存");
+  } catch (e) {
+    toast("保存失败：" + e.message, false);
+  }
+}
+
+async function createInterviewer() {
+  const usageType = confirm("创建“企业招聘面试”虚拟人？\n\n确定：企业招聘面试\n取消：C 端模拟面试")
+    ? "enterprise" : "practice";
+  const slug = "avatar-" + Math.random().toString(36).slice(2, 7);
+  const body = {
+    ...rosterState,
+    avatars: [...rosterState.avatars, { slug, name: "新面试官", direction: "", avatar_id: "", voice_id: "", voice_speed: "", usage_type: usageType }],
+  };
+  try {
+    const res = await fetch("/api/roster", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || res.status);
+    location.href = "/interview-config?avatar=" + encodeURIComponent(slug);   // fill it in on the detail page
+  } catch (e) {
+    toast("新建失败：" + e.message, false);
+  }
+}
+
+async function deleteInterviewer(slug) {
+  if (rosterState.avatars.length <= 1) { toast("至少保留一个面试官", false); return; }
+  if (!confirm("删除该面试官？其面试内容配置也会一并删除。")) return;
+  try {
+    const res = await fetch("/api/roster/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || res.status);
+    rosterState = data.roster;
+    renderInterviewers();
+    renderPolicy();
+    toast("已删除");
+  } catch (e) {
+    toast("删除失败：" + e.message, false);
+  }
+}
+
 // ---- agents ----
 
-function agentCard(a) {
-  const canStop = a.status === "running";
-  const canStart = a.status === "stopped" && !busy.has(a.name);
-  const linkCls = a.status === "stopped" ? "disabled" : "";
-  const startLabel = busy.has(a.name) ? "启动中…" : "启动";
-  return `
-  <div class="agent" id="agent-${a.name}">
-    <div class="agent-top">
-      <span class="agent-name">${a.label}</span>
-      <span class="agent-id">${a.name}</span>
-      <span class="pill ${a.status}">${STATUS_TEXT[a.status]}${a.pid ? " · pid " + a.pid : ""}</span>
-    </div>
-    <div class="agent-desc">${a.desc}</div>
-    <div class="agent-actions">
-      <span class="port">端口 <input data-port="${a.name}" value="${a.port}" inputmode="numeric"></span>
-      <span class="spacer"></span>
-      <button ${canStart ? "" : "disabled"} onclick="startAgent('${a.name}')">${startLabel}</button>
-      <button class="danger" ${canStop ? "" : "disabled"} onclick="stopAgent('${a.name}')">停止</button>
-      <a class="${linkCls}" href="${a.url}" target="_blank" rel="noopener">打开页面 ↗</a>
-      ${a.name === "interview" ? '<a href="/interview-config">参数配置</a>' : ""}
-      <button onclick="toggleLogs('${a.name}')">日志</button>
-    </div>
-    <pre class="agent-logs ${openLogs.has(a.name) ? "open" : ""}" id="logs-${a.name}"></pre>
-  </div>`;
+let svcAgent = null;
+
+function renderService() {
+  const a = svcAgent;
+  const dot = $("svc-dot"), text = $("svc-text"), open = $("svc-open"), toggle = $("svc-toggle");
+  if (!a) { text.textContent = "服务不可用"; dot.className = "svc-dot off"; return; }
+  const running = a.status === "running" || a.status === "external";
+  const newUrl = running && a.url ? a.url : "";
+  if (newUrl !== agentUrl) { agentUrl = newUrl; renderInterviewers(); }  // refresh 试面 links
+  dot.className = "svc-dot " + (running ? "on" : "off");
+  text.textContent = STATUS_TEXT[a.status] || (running ? "运行中" : "未启动");
+  if (running && a.url) { open.href = a.url; open.classList.remove("disabled"); }
+  else { open.removeAttribute("href"); open.classList.add("disabled"); }
+  if (busy.has("interview")) { toggle.textContent = "处理中…"; toggle.disabled = true; }
+  else if (a.status === "external") { toggle.textContent = "外部运行"; toggle.disabled = true; }
+  else { toggle.textContent = a.status === "running" ? "停止" : "开始"; toggle.disabled = false; }
 }
 
-function renderAgents() {
-  const focused = document.activeElement;
-  const focusName = focused?.dataset?.port;
-  const editing = {};
-  for (const el of document.querySelectorAll("input[data-port]")) {
-    editing[el.dataset.port] = el.value;
-  }
-  $("agent-list").innerHTML = agents.map(agentCard).join("");
-  for (const [name, val] of Object.entries(editing)) {
-    const el = document.querySelector(`input[data-port="${name}"]`);
-    if (el && val !== "") el.value = val;
-  }
-  if (focusName) {
-    document.querySelector(`input[data-port="${focusName}"]`)?.focus();
-  }
-  for (const name of openLogs) loadLogs(name);
-}
-
-async function refreshAgents() {
+async function refreshService() {
   try {
     agents = await (await fetch("/api/agents")).json();
-    renderAgents();
-  } catch { /* hub restarting; next poll retries */ }
+    svcAgent = agents.find((a) => a.name === "interview") || agents[0] || null;
+  } catch { return; }
+  renderService();
+  if (document.querySelector(".svc-debug")?.open) loadServiceLogs();
+}
+
+async function toggleService() {
+  if (!svcAgent) return;
+  if (svcAgent.status === "running") await stopAgent("interview");
+  else await startAgent("interview");
 }
 
 async function startAgent(name) {
   busy.add(name);
-  renderAgents();
+  renderService();
   try {
     const res = await fetch("/api/agents/start", {
       method: "POST",
@@ -538,13 +1077,12 @@ async function startAgent(name) {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || res.status);
-    toast(`✅ 已启动 — ${data.url}`);
+    toast("✅ 面试服务已启动");
   } catch (e) {
     toast("启动失败：" + e.message, false);
-    openLogs.add(name);
   } finally {
     busy.delete(name);
-    await refreshAgents();
+    await refreshService();
   }
 }
 
@@ -557,23 +1095,17 @@ async function stopAgent(name) {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || res.status);
-    toast("已停止 " + name);
+    toast("面试服务已停止");
   } catch (e) {
     toast("停止失败：" + e.message, false);
   }
-  await refreshAgents();
+  await refreshService();
 }
 
-function toggleLogs(name) {
-  if (openLogs.has(name)) openLogs.delete(name);
-  else { openLogs.add(name); loadLogs(name); }
-  $(`logs-${name}`).classList.toggle("open");
-}
-
-async function loadLogs(name) {
+async function loadServiceLogs() {
   try {
-    const data = await (await fetch(`/api/agents/logs?name=${name}`)).json();
-    const el = $(`logs-${name}`);
+    const data = await (await fetch("/api/agents/logs?name=interview")).json();
+    const el = $("svc-logs");
     if (!el) return;
     el.textContent = data.lines?.length ? data.lines.join("\n") : "（暂无输出）";
     el.scrollTop = el.scrollHeight;
@@ -581,8 +1113,9 @@ async function loadLogs(name) {
 }
 
 loadConfig();
-refreshAgents();
-setInterval(refreshAgents, 3000);
+loadRoster();
+refreshService();
+setInterval(refreshService, 3000);
 </script>
 </body>
 </html>

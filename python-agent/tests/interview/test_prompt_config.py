@@ -8,7 +8,11 @@ from interview.controller import InterviewController
 from interview.follow_up_decider import FollowUpDecider
 from interview.interview_manager import InterviewManager
 from interview.models import QuestionSpec, SpeechConfig
-from interview.prompts import render_template
+from interview.prompts import (
+    DEFAULT_REPORT_PROMPT_MODULES,
+    build_report_prompt_from_modules,
+    render_template,
+)
 from interview.report_generator import ReportGenerator
 
 
@@ -66,6 +70,10 @@ class FakeLlm:
         self.prompt = prompt
         return self.text
 
+    async def generate_once(self, prompt: str, max_tokens: int = 512) -> str:
+        self.prompt = prompt
+        return self.text
+
 
 def _manager(tmp_path: Path, content: str) -> InterviewManager:
     path = tmp_path / "interview.yaml"
@@ -89,6 +97,18 @@ def test_render_template_safe_with_literal_json_braces():
     assert out == '输出 {"score": 1} 格式，问题：Q1'
 
 
+def test_build_report_prompt_from_modules_preserves_module_order():
+    prompt = build_report_prompt_from_modules(
+        {
+            "role_and_style": "A",
+            "cover_and_summary": "B",
+            "output_contract": "C",
+        }
+    )
+    assert prompt == "A\n\nB\n\nC"
+    assert DEFAULT_REPORT_PROMPT_MODULES["dimension_commentary"]
+
+
 # ---------------------------------------------------------------------------
 # manager: defaults & overrides
 # ---------------------------------------------------------------------------
@@ -96,13 +116,11 @@ def test_render_template_safe_with_literal_json_braces():
 
 def test_defaults_match_legacy_behavior(tmp_path):
     manager = _manager(tmp_path, MINIMAL_YAML)
-    assert manager.build_opening_text() == (
-        "你好，我是测试面试官。"
-        "今天我们先简单聊聊你和测试工程师这个方向的匹配度，"
-        "大概会占用你 15 分钟。"
-        "我会从项目经历开始问，过程中如果有需要确认的地方，会顺着你的回答多问一两句。"
-        "不用背答案，按你真实做过的事情讲就可以。"
-    )
+    opening = manager.build_opening_text()
+    # admin preview 模式下 target_role / candidate_background 保持为占位符
+    assert "你好，我是测试面试官。" in opening
+    assert "你和{target_role}这个方向的匹配度" in opening
+    assert "大概会占用你 15 分钟" in opening
     cfg = manager.config
     assert cfg.prompts.evaluator == prompt_defaults.DEFAULT_EVALUATOR_PROMPT
     assert cfg.workflow.hard_timeout_seconds == 75.0
@@ -115,7 +133,8 @@ def test_persona_context_exposes_style_rules_background(tmp_path):
     assert ctx["interviewer_name"] == "测试面试官"
     assert ctx["interviewer_style"] == "犀利直接"
     assert ctx["interviewer_rules"] == "只问技术；不闲聊"
-    assert ctx["candidate_background"] == "五年测试经验"
+    # admin preview 下 candidate_background 仍是占位符
+    assert ctx["candidate_background"] == "{candidate_background}"
 
 
 def test_system_prompt_injects_persona(tmp_path):
@@ -124,15 +143,28 @@ def test_system_prompt_injects_persona(tmp_path):
     assert "测试面试官" in system
     assert "犀利直接" in system
     assert "只问技术；不闲聊" in system
-    assert "五年测试经验" in system
+    # admin preview 下 candidate_background 保持占位符
+    assert "{candidate_background}" in system
+
+
+def test_default_task_prompts_explicitly_inherit_interviewer_persona():
+    assert "{interviewer_name}" in prompt_defaults.DEFAULT_PLANNER_PROMPT
+    assert "{interviewer_style}" in prompt_defaults.DEFAULT_PLANNER_PROMPT
+    assert "{interviewer_rules}" in prompt_defaults.DEFAULT_PLANNER_PROMPT
+    assert "{interviewer_name}" in prompt_defaults.DEFAULT_EVALUATOR_PROMPT
+    assert "{interviewer_style}" in prompt_defaults.DEFAULT_FOLLOW_UP_DECIDER_PROMPT
+    assert "口头开场或收尾任务只输出自然语言" in prompt_defaults.DEFAULT_SYSTEM_PROMPT
+    assert "请始终输出结构化 JSON" not in prompt_defaults.DEFAULT_SYSTEM_PROMPT
 
 
 def test_custom_sections_override_everything(tmp_path):
     manager = _manager(tmp_path, CUSTOM_SECTIONS_YAML)
     cfg = manager.config
-    assert manager.build_system_prompt() == "系统模板：测试面试官/测试工程师"
-    assert manager.build_opening_text() == "开场：测试面试官 面 测试工程师，共 15 分钟"
+    # admin preview 下 target_role 是占位符
+    assert manager.build_system_prompt() == "系统模板：测试面试官/{target_role}"
+    assert manager.build_opening_text() == "开场：测试面试官 面 {target_role}，共 15 分钟"
     assert cfg.speech.skip_transition == "跳过啦。"
+    assert cfg.speech.next_question_transitions == ["下一题。"]
     assert cfg.speech.answer_acknowledgements == ["收到一"]
     assert [(c.after_seconds, c.text) for c in cfg.speech.thinking_checks] == [
         (10.0, "还在想吗？")
@@ -146,58 +178,62 @@ def test_custom_sections_override_everything(tmp_path):
 # knowledge base
 # ---------------------------------------------------------------------------
 
-KNOWLEDGE_YAML = MINIMAL_YAML + """
-knowledge:
-  max_chars: 6000
-  entries:
-    - title: "岗位 JD"
-      content: "负责后端服务设计与稳定性保障"
-    - title: "禁用资料"
-      content: "不应出现的内容"
-      enabled: false
-    - title: "候选人简历"
-      content: "三年 FastAPI 与 MySQL 经验"
+POSITIONS_YAML = MINIMAL_YAML + """
+positions:
+  - name: "后端岗位"
+    match_keywords: [python, 后端]
+    business_questions:
+      - "请介绍你自己。"
+    core_competencies: "重点考察后端服务的可靠性：重试、幂等、降级。"
 """
 
 
-def test_knowledge_block_formats_entries_and_skips_disabled(tmp_path):
-    manager = _manager(tmp_path, KNOWLEDGE_YAML)
+def test_knowledge_block_includes_position_and_competencies(tmp_path):
+    manager = _manager(tmp_path, POSITIONS_YAML)
     block = manager.knowledge_block()
     assert "本场面试参考资料" in block
-    assert "【岗位 JD】\n负责后端服务设计与稳定性保障" in block
-    assert "【候选人简历】" in block
-    assert "禁用资料" not in block
-    assert "不应出现的内容" not in block
+    # admin preview 下 position / core_competencies 都是占位符
+    assert "【岗位】{position}" in block
+    assert "{core_competencies}" in block
 
 
-def test_system_prompt_includes_knowledge(tmp_path):
-    manager = _manager(tmp_path, KNOWLEDGE_YAML)
+def test_system_prompt_includes_position_and_candidate_material(tmp_path):
+    from interview.profile import CandidateProfile
+
+    manager = _manager(tmp_path, POSITIONS_YAML)
+    manager.apply_candidate_profile(
+        # JD contains "后端" so it genuinely matches the bank position (post-fix, an
+        # unrelated JD would NOT pull in the position).
+        CandidateProfile(jd_text="本场 JD 内容：负责 Python 后端服务", resume_text="三年 FastAPI 经验")
+    )
     system = manager.build_system_prompt()
-    assert "负责后端服务设计与稳定性保障" in system
-    assert "三年 FastAPI 与 MySQL 经验" in system
+    assert "重点考察后端服务的可靠性" in system  # persistent 核心考察点 paragraph
+    assert "本场 JD 内容" in system  # ephemeral {jd}
+    assert "三年 FastAPI 经验" in system  # ephemeral {resume}
 
 
-def test_no_knowledge_leaves_system_prompt_clean(tmp_path):
+def test_no_positions_or_profile_leaves_system_prompt_clean(tmp_path):
     manager = _manager(tmp_path, MINIMAL_YAML)
     system = manager.build_system_prompt()
-    assert "本场面试参考资料" not in system
-    assert "{knowledge_block}" not in system
+    # admin preview 下 system prompt 末尾会附 runtime 上下文占位符块
+    # （便于在控制台预览时展示 prompt 模板结构），但 runtime 不会泄露真实数据
+    assert "【本场候选人 JD】" in system
+    assert "【本场候选人简历】" in system
+    assert "{jd}" in system
+    assert "{resume}" in system
+    # 真实 JD / 简历内容不会泄露到 admin preview
+    assert "python" not in system.lower()
     assert not system.endswith("\n\n")
 
 
-def test_knowledge_truncates_at_max_chars(tmp_path):
-    long_yaml = MINIMAL_YAML + """
-knowledge:
-  max_chars: 200
-  entries:
-    - title: "超长资料"
-      content: \"""" + ("长" * 500) + """\"
-"""
-    manager = _manager(tmp_path, long_yaml)
+def test_reference_block_truncates_at_max_chars(tmp_path):
+    from interview.profile import CandidateProfile
+
+    manager = _manager(tmp_path, POSITIONS_YAML)
+    manager.apply_candidate_profile(CandidateProfile(resume_text="长" * 7000))
     block = manager.knowledge_block()
     assert "（参考资料过长，已截断）" in block
-    # body capped at max_chars plus header/notes
-    assert len(block) < 350
+    assert len(block) < prompt_defaults.DEFAULT_KNOWLEDGE_MAX_CHARS + 200
 
 
 # ---------------------------------------------------------------------------
@@ -213,7 +249,8 @@ async def test_evaluator_uses_custom_template_and_context():
         context={"interviewer_style": "犀利直接"},
     )
     await evaluator.evaluate("Q1", "A1")
-    assert llm.prompt == "评估：Q1|A1|犀利直接"
+    assert llm.prompt.startswith("评估：Q1|A1|犀利直接")
+    assert "followUpQuestion 必须结合当前问题" in llm.prompt
 
 
 async def test_follow_up_decider_uses_custom_template():
@@ -235,15 +272,20 @@ async def test_follow_up_decider_uses_custom_template():
 
 
 async def test_report_generator_uses_custom_template():
-    llm = FakeLlm('{"summary": "ok"}')
+    llm = FakeLlm(
+        '{"summary":"候选人能够说明项目推进过程。","overallScore":70,'
+        '"strengths":[],"weaknesses":[],"recommendations":[],"dimensions":{'
+        '"role_alignment":{"score":7,"evidence":[],"concerns":[],'
+        '"recommendations":[],"confidence":"medium"}}}'
+    )
     generator = ReportGenerator(
         llm, prompt_template="报告：{rubric_dimensions}|{termination_reason}", context={}
     )
     report = await generator.generate_async(
         [], transcript=[], rubric_dimensions=["depth"], termination_reason="user_stopped"
     )
-    assert llm.prompt == '报告：["depth"]|user_stopped'
-    assert report.summary == "ok"
+    assert llm.prompt.startswith('报告：["depth"]|user_stopped')
+    assert report.summary == "候选人能够说明项目推进过程。"
 
 
 # ---------------------------------------------------------------------------
@@ -257,7 +299,7 @@ def _speech() -> SpeechConfig:
         final_answer_acknowledgements=["收到最后"],
         follow_up_prefixes=["追问前缀。"],
         first_question_transition="第一题来了。",
-        next_question_transition="下一题。",
+        next_question_transitions=["下一题甲。", "下一题乙。"],
         skip_transition="跳过啦。",
         closing="面试结束语。",
         termination="提前终止语。",
@@ -280,6 +322,7 @@ def test_controller_uses_custom_speech_and_limits():
     assert controller._skip_transition_text == "跳过啦。"
     assert controller._closing_text == "面试结束语。"
     assert controller._termination_text == "提前终止语。"
+    assert set(controller._next_question_transitions) == {"下一题甲。", "下一题乙。"}
     assert controller._max_skipped_questions == 5
     assert controller._max_consecutive_skipped_questions == 4
 
