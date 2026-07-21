@@ -7,9 +7,38 @@ import pytest
 
 from hub.connection_test import (
     _friendly_error,
+    _platform_error,
     check_asr_connection,
     check_llm_connection,
+    check_platform_connection,
 )
+
+
+# ---------------------------------------------------------------------------
+# platform (LiveAvatar /session/start)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_platform_missing_credentials():
+    r = await check_platform_connection({"platform": {"api_key": ""}})
+    assert r["success"] is False and "API Key" in r["error"]
+    r = await check_platform_connection({"platform": {"api_key": "k", "avatar_id": ""}})
+    assert r["success"] is False and "Avatar ID" in r["error"]
+    r = await check_platform_connection(
+        {"platform": {"api_key": "k", "avatar_id": "a", "base_url": ""}}
+    )
+    assert r["success"] is False and "平台地址" in r["error"]
+
+
+def test_platform_error_published_shared_gives_account_hint():
+    # the exact message the platform returns even for a bogus key/avatar
+    m = _platform_error(400, "Please verify whether the avatar has been published and shared.")
+    assert "账户" in m or "环境" in m  # points at key/base_url mismatch, not publish state
+
+
+def test_platform_error_invalid_key():
+    assert "无效" in _platform_error(40004, "principal unidentified")
 
 
 # ---------------------------------------------------------------------------

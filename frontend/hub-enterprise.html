@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>企业面试管理</title>
+<style>
+:root{color-scheme:dark;--bg:#0a0d14;--panel:#121722;--line:#283144;--text:#edf2ff;--muted:#98a4b8;--blue:#5d7cff;--red:#ef6b73}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 ui-sans-serif,system-ui;padding:28px}
+a{color:#9eb1ff;text-decoration:none}button,select,input,textarea{font:inherit;color:inherit;background:#191f2d;border:1px solid var(--line);border-radius:9px;padding:9px 12px}input,select,textarea{width:100%}textarea{resize:vertical;min-height:92px}
+button{cursor:pointer}.primary{background:var(--blue);border-color:var(--blue)}.danger{color:#ff9ca2}.wrap{max-width:1160px;margin:auto}.top{display:flex;align-items:center;gap:16px;margin-bottom:22px}.top h1{margin:0;font-size:22px}.spacer{flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}.create{display:grid;grid-template-columns:1.15fr 1fr 1fr 130px auto;gap:12px;align-items:end}.candidate-create{display:grid;grid-template-columns:1fr 1fr .8fr;gap:12px}.candidate-resume{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;margin-top:12px}.position-create{display:grid;grid-template-columns:.8fr 1.8fr auto;gap:12px;align-items:end}.section-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:16px}.section-head h2{margin:0}.section-head p{margin:3px 0 0;color:var(--muted)}
+label{display:grid;gap:6px;color:var(--muted)}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:500}.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.empty{text-align:center;color:var(--muted);padding:32px}.invite{margin-top:12px;background:#0d1220;border:1px solid #34416a;border-radius:10px;padding:12px;display:none}.invite code{word-break:break-all}.detail{white-space:pre-wrap;max-height:55vh;overflow:auto;background:#0d1220;padding:14px;border-radius:10px}
+.candidate-meta{color:var(--muted);font-size:12px}.candidate-list{margin-top:18px;border-top:1px solid var(--line);padding-top:8px}.candidate-list table td:first-child{width:26%}.status-note{color:var(--muted);font-size:12px;margin-top:8px}
+.record-link{display:flex;align-items:center;gap:8px;min-width:210px}.record-link code{display:block;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b9c7ee}.report-ready{color:#9dd8b5;border-color:#315a43}.report-waiting{color:var(--muted)}
+.position-preview{margin-top:12px;border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}.position-preview summary{cursor:pointer;color:#c9d3e7}.position-preview pre{white-space:pre-wrap;margin:10px 0 0;max-height:240px;overflow:auto;font:12px/1.75 ui-sans-serif,system-ui;color:#b9c4d8}
+dialog{width:min(760px,92vw);background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:20px}dialog::backdrop{background:#0009}
+@media(max-width:760px){body{padding:16px}.create,.candidate-create,.candidate-resume,.position-create{grid-template-columns:1fr}table{display:block;overflow:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="/">← 控制台</a><h1>企业面试</h1><span class="spacer"></span><span>邀请与招聘决策记录</span></div>
+  <section class="card">
+    <div class="section-head"><div><h2>候选人库</h2><p>简历由招聘方统一录入；候选人打开邀请后无需再次填写。</p></div><span class="spacer"></span><span class="badge" id="candidate-count">0 人</span></div>
+    <form id="candidate-form">
+      <div class="candidate-create">
+        <label>候选人姓名<input id="candidate-name" name="name" required placeholder="如：张三"></label>
+        <label>邮箱或手机号<input id="candidate-contact" name="contact" placeholder="用于身份确认与后续联系"></label>
+        <label>候选人来源<input id="candidate-source" name="source" placeholder="如：Boss、内推、官网"></label>
+      </div>
+      <div class="candidate-resume">
+        <label>上传简历<input type="file" id="candidate-resume-file" name="resume_file" accept=".pdf,.docx,.txt,.md"></label>
+        <label>或粘贴简历文本<textarea id="candidate-resume-text" name="resume_text" placeholder="上传文件时以文件内容为准"></textarea></label>
+      </div>
+      <div class="actions" style="margin-top:12px"><button class="primary" id="candidate-save" type="submit">保存候选人</button><span class="status-note" id="candidate-status">必须提供姓名和简历</span></div>
+    </form>
+    <div class="candidate-list">
+      <table><thead><tr><th>候选人</th><th>简历</th><th>来源</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="candidates"></tbody></table>
+      <div class="empty" id="candidate-empty" hidden>还没有候选人。先录入候选人和简历，再创建面试任务。</div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="section-head"><div><h2>企业岗位</h2><p>维护岗位名称和 JD；已创建的面试任务继续使用创建当时的岗位快照。</p></div><span class="spacer"></span><span class="badge" id="position-count">0 个</span></div>
+    <form id="position-form">
+      <div class="position-create">
+        <label>岗位名称<input id="position-title" required placeholder="如：AI 产品经理"></label>
+        <label>岗位 JD<textarea id="position-description" required placeholder="岗位职责、任职要求、能力重点…"></textarea></label>
+        <div class="actions"><button class="primary" id="position-save" type="submit">保存岗位</button><button id="position-cancel" type="button" hidden>取消编辑</button></div>
+      </div>
+      <div class="status-note" id="position-status">岗位会用于面试出题、追问和最终岗位匹配评估。</div>
+    </form>
+    <div class="candidate-list">
+      <table><thead><tr><th>岗位</th><th>JD 摘要</th><th>更新时间</th><th>操作</th></tr></thead><tbody id="positions"></tbody></table>
+      <div class="empty" id="position-empty" hidden>还没有企业岗位。先创建岗位，再生成面试任务。</div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="section-head"><div><h2>创建面试任务</h2><p>选择候选人、岗位与数字人，系统会冻结本场面试所用资料并生成专属链接。</p></div></div>
+    <div class="create">
+      <label>候选人<select id="candidate"></select></label>
+      <label>企业招聘虚拟人<select id="avatar"></select></label>
+      <label>候选人应聘岗位<select id="position"></select></label>
+      <label>有效期（天）<select id="days"><option>1</option><option selected>7</option><option>14</option><option>30</option></select></label>
+      <button class="primary" id="create">生成专属链接</button>
+    </div>
+    <details class="position-preview">
+      <summary>查看所选岗位 JD</summary>
+      <pre id="position-jd"></pre>
+    </details>
+    <div class="invite" id="invite"><b>请立即复制：</b> <code id="invite-url"></code> <button id="copy">复制</button></div>
+  </section>
+  <section class="card">
+    <div class="top"><h2 style="margin:0">面试记录</h2><span class="spacer"></span><button id="refresh">刷新</button></div>
+    <table><thead><tr><th>候选人 / 岗位</th><th>虚拟人</th><th>状态</th><th>面试链接</th><th>创建 / 到期</th><th>操作</th></tr></thead><tbody id="records"></tbody></table>
+    <div class="empty" id="empty" hidden>暂无企业面试记录</div>
+  </section>
+</div>
+<dialog id="detail-dialog"><form method="dialog"><button style="float:right">关闭</button></form><h2 id="detail-title">招聘记录</h2><div class="detail" id="detail"></div></dialog>
+<script src="/enterprise-interviews.js"></script>
+</body>
+</html>

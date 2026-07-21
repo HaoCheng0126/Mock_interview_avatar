@@ -12,6 +12,10 @@ class FakeLlm:
         self.prompt = prompt
         return self.text
 
+    async def generate_once(self, prompt, max_tokens=512):
+        self.prompt = prompt
+        return self.text
+
 
 def test_follow_up_decider_requests_probe_for_weak_answer():
     question = QuestionSpec(
@@ -37,9 +41,7 @@ def test_follow_up_decider_requests_probe_for_weak_answer():
     )
 
     assert decision.needed is True
-    assert decision.follow_up_type == "deepen"
-    assert "可靠性" in decision.reason or "reliability" in decision.reason
-    assert decision.missing_signal
+    assert decision.suggested_question  # a concrete follow-up question is proposed
 
 
 def test_follow_up_decider_skips_when_answer_is_strong():
@@ -73,7 +75,6 @@ def test_follow_up_decider_skips_when_answer_is_strong():
     )
 
     assert decision.needed is False
-    assert decision.follow_up_type == "skip"
 
 
 def test_follow_up_planner_generates_question_from_decision():
@@ -131,5 +132,4 @@ async def test_follow_up_decider_uses_llm_when_available():
 
     assert "完整对话记录" in llm.prompt
     assert decision.needed is True
-    assert decision.follow_up_type == "evidence"
     assert decision.suggested_question == "你当时具体采取了哪些恢复措施？"

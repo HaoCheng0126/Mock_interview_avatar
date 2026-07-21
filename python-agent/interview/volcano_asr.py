@@ -182,6 +182,7 @@ class VolcAsrManager:
             raise RuntimeError("VOLC_ASR_APP_ID / VOLC_ASR_ACCESS_TOKEN are not set")
         self._closed = False
         self._speaking = False
+        logger.debug("🎤 Volcengine ASR connecting to %s", VOLC_ASR_URL)
         self._ws = await websockets.connect(
             VOLC_ASR_URL,
             additional_headers={"Authorization": f"Bearer; {VOLC_ACCESS_TOKEN}"},
@@ -189,13 +190,18 @@ class VolcAsrManager:
             max_size=10_000_000,
             open_timeout=10,
         )
+        payload = self._request_payload()
+        logger.debug("🎤 Volcengine ASR sending full client request: %s", payload)
         await self._ws.send(
             build_frame(
                 _FULL_CLIENT_REQUEST,
-                json.dumps(self._request_payload()).encode("utf-8"),
+                json.dumps(payload).encode("utf-8"),
             )
         )
-        first = parse_response(await asyncio.wait_for(self._ws.recv(), timeout=10))
+        raw_first = await asyncio.wait_for(self._ws.recv(), timeout=10)
+        logger.debug("🎤 Volcengine ASR first response raw: %d bytes", len(raw_first))
+        first = parse_response(raw_first)
+        logger.debug("🎤 Volcengine ASR first response parsed: %s", first)
         code = first.get("payload_msg", {}).get("code", _CODE_SUCCESS)
         if code not in (_CODE_SUCCESS, _CODE_NO_SPEECH):
             message = first.get("payload_msg", {}).get("message", "ASR handshake rejected")
@@ -235,10 +241,13 @@ class VolcAsrManager:
             logger.exception("🎤 Volcengine ASR receiver error")
 
     async def _handle_frame(self, raw: bytes) -> None:
+        logger.debug("🎤 Volcengine ASR received frame: %d bytes", len(raw))
         parsed = parse_response(raw)
+        logger.debug("🎤 Volcengine ASR parsed: %s", parsed)
         if parsed.get("message_type") == _SERVER_ERROR_RESPONSE:
             code = parsed.get("code", 0)
             message = parsed.get("payload_msg", {}).get("message", "")
+            logger.error("🎤 Volcengine ASR error: code=%d message=%s", code, message)
             if self._on_error:
                 await self._on_error(str(code), message)
             return
@@ -256,11 +265,13 @@ class VolcAsrManager:
             if self._on_speech_started:
                 await self._on_speech_started()
         if text and self._on_interim:
+            logger.debug("🎤 Volcengine ASR interim: %s", text)
             await self._on_interim(text)
         for utterance in utterances:
             if not utterance.get("definite"):
                 continue
             final_text = (utterance.get("text") or "").strip()
+            logger.debug("🎤 Volcengine ASR final: %s", final_text)
             if self._on_speech_stopped:
                 await self._on_speech_stopped()
             if final_text and self._on_transcript:

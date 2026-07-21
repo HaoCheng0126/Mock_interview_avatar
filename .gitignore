@@ -18,3 +18,13 @@ node_modules/
 .superpowers/
 .vscode/
 docs/superpowers/
+python-agent/data/
+
+# Local debugging and AI tool state
+.dbg/
+.tmp_pdf_preview/
+.trae/
+.impeccable.md
+
+# Generated interview reports may contain candidate information
+面试报告-*.pdf

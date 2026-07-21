@@ -37,6 +37,11 @@
   #topbar h1 { font-size: 15px; font-weight: 600; }
   #topbar .sub { font-size: 12px; color: var(--text-dim); }
   #topbar .spacer { flex: 1; }
+  #topbar .avatar-switch { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+  #topbar .avatar-switch select { padding: 5px 8px; border-radius: 7px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 12px; }
+  #topbar .try-link { font-size: 12px; color: var(--accent); text-decoration: none; white-space: nowrap; }
+  #topbar .try-link:hover { text-decoration: underline; }
+  #topbar .try-link.disabled { color: var(--text-dim); pointer-events: none; }
 
   button {
     font-family: inherit; font-size: 12px; cursor: pointer;
@@ -97,9 +102,39 @@
     outline: none; border-color: var(--accent);
   }
   .note { font-size: 10.5px; color: var(--text-dim); margin-top: 3px; line-height: 1.5; }
+  .test-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .test-result { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+  .test-result.ok { color: var(--green); }
+  .test-result.err { color: var(--red); }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   @media (max-width: 640px) { .row2, .row3 { grid-template-columns: 1fr; } }
+
+  .platform-choice {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .platform-option {
+    display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px;
+    background: var(--bg); transition: border-color .15s, background .15s;
+  }
+  .platform-option:has(input:checked) {
+    border-color: var(--accent); background: rgba(108,140,255,.08);
+  }
+  .platform-option input { margin-top: 2px; accent-color: var(--accent); }
+  .platform-option strong { display: block; font-size: 12px; font-weight: 600; }
+  .platform-option span { display: block; margin-top: 3px; color: var(--text-dim); font-size: 10.5px; line-height: 1.45; }
+  .platform-summary {
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+    background: var(--bg); color: var(--text-dim); font-size: 11px; line-height: 1.6;
+  }
+  .platform-summary b { color: var(--text); font-weight: 500; }
+  .platform-custom {
+    display: flex; flex-direction: column; gap: 10px;
+    border-top: 1px solid var(--border); padding-top: 12px;
+  }
+  .platform-custom[hidden], .platform-summary[hidden] { display: none !important; }
+  @media (max-width: 640px) { .platform-choice { grid-template-columns: 1fr; } }
 
   .check-row { display: flex; gap: 8px; align-items: center; }
   .check-row input.secs { width: 84px; flex-shrink: 0; font-family: var(--mono); }
@@ -114,27 +149,44 @@
     max-height: 320px; overflow-y: auto;
   }
   .preview-pre.error { color: var(--red); border-color: #5a2a2a; }
+  .preview-pre.clickable { cursor: pointer; transition: border-color .15s; }
+  .preview-pre.clickable:hover { border-color: var(--accent); }
+  .edit-link {
+    padding: 1px 8px; font-size: 11px; margin-left: 6px; vertical-align: middle;
+    color: var(--accent); background: transparent; border: 1px solid var(--border); border-radius: 6px;
+  }
+  .edit-link:hover { border-color: var(--accent); background: rgba(108,140,255,.1); }
+  textarea.flash { animation: flashField 1.6s ease; }
+  @keyframes flashField {
+    0%, 100% { border-color: var(--border); box-shadow: none; }
+    15%, 60% { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,140,255,.28); }
+  }
   #preview-status { font-size: 10.5px; color: var(--green); }
 
-  /* knowledge */
-  .k-entry {
+  /* positions (岗位与题库) */
+  .pos-card {
     background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 12px; display: flex; flex-direction: column; gap: 8px;
+    padding: 14px; display: flex; flex-direction: column; gap: 10px;
   }
-  .k-entry + .k-entry { margin-top: 10px; }
-  .k-head { display: flex; gap: 10px; align-items: center; }
-  .k-head .k-title {
-    flex: 1; background: var(--panel); border: 1px solid var(--border);
-    border-radius: 6px; color: var(--text); font-size: 12px; padding: 6px 9px;
+  .pos-card + .pos-card { margin-top: 14px; }
+  .pos-head { display: flex; gap: 10px; align-items: center; }
+  .pos-head .pos-name {
+    flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 13px; font-weight: 600; padding: 8px 10px;
   }
-  .k-head .k-title:focus { outline: none; border-color: var(--accent); }
-  .k-toggle { font-size: 11px; color: var(--text-dim); display: flex; gap: 5px; align-items: center; white-space: nowrap; }
-  .k-entry textarea {
-    width: 100%; background: var(--panel); border: 1px solid var(--border);
-    border-radius: 6px; color: var(--text); font-size: 11.5px; padding: 8px 10px;
-    font-family: var(--mono); resize: vertical; line-height: 1.6;
+  .pos-head .pos-name:focus { outline: none; border-color: var(--accent); }
+  .pos-card .field input, .pos-card .field textarea { background: var(--panel); }
+  .pos-sub { font-size: 11px; color: var(--text-dim); font-weight: 600; margin-top: 4px; }
+  .pos-row { display: flex; gap: 8px; align-items: center; }
+  .pos-row + .pos-row { margin-top: 6px; }
+  .pos-row input {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 12px; padding: 7px 9px; min-width: 0;
   }
-  .k-entry textarea:focus { outline: none; border-color: var(--accent); }
+  .pos-row input:focus { outline: none; border-color: var(--accent); }
+  .pos-row .comp-name, .pos-row .q-comp, .pos-row .q-competency { flex: 0 0 36%; }
+  .pos-row .comp-desc, .pos-row .q-prompt { flex: 1; }
+  .pos-row .row-del { flex-shrink: 0; }
 
   /* prompt template badges */
   .badge {
@@ -170,21 +222,82 @@
   <h1>🎤 模拟面试 — 配置</h1>
   <span class="sub">保存后下一场面试生效，无需重启 agent</span>
   <span class="spacer"></span>
+  <label class="avatar-switch">面试官 <select id="avatar-switcher" onchange="switchAvatar()"></select></label>
+  <a id="try-link" class="try-link disabled" target="_blank" rel="noopener">试面 ↗</a>
   <button class="primary" id="save-btn" onclick="saveAll()">保存配置</button>
 </div>
 
 <div id="tabs">
   <button class="active" data-tab="settings" onclick="showTab('settings')">面试设定</button>
-  <button data-tab="knowledge" onclick="showTab('knowledge')">知识库</button>
-  <button data-tab="questions" onclick="showTab('questions')">题库</button>
+  <button data-tab="positions" onclick="showTab('positions')">岗位与题库</button>
+  <button id="company-knowledge-tab" data-tab="company-knowledge" onclick="showTab('company-knowledge')" hidden>公司知识库</button>
   <button data-tab="speech" onclick="showTab('speech')">话术与节奏</button>
   <button data-tab="prompts" onclick="showTab('prompts')">提示词模板</button>
+  <button data-tab="logs" onclick="showTab('logs')">实时日志</button>
 </div>
 
 <div id="content">
 
   <!-- ============ Tab 1: 面试设定 ============ -->
   <section class="pane active" id="pane-settings">
+    <div class="card">
+      <div class="card-head"><h2>形象与声音</h2><span class="hint">这位面试官的数字人形象、音色，以及列表/候选人处显示的名称</span></div>
+      <div class="card-body">
+        <div class="row2">
+          <div class="field"><label for="m-name">显示名称</label><input id="m-name" placeholder="如 技术总监"></div>
+          <div class="field"><label for="m-direction">方向标签</label><input id="m-direction" placeholder="如 后端 / 架构"></div>
+        </div>
+        <div class="field"><label>面试类型</label><div id="m-usage-type" class="note">C 端模拟面试</div></div>
+        <div class="row2">
+          <div class="field"><label for="m-avatar_id">Avatar ID（形象）</label><input id="m-avatar_id" class="mono" spellcheck="false" placeholder="avatar_..."></div>
+          <div class="field"><label for="m-voice_id">Voice ID（可选）</label><input id="m-voice_id" class="mono" spellcheck="false" placeholder="留空用形象默认音色"></div>
+        </div>
+        <div class="field"><label for="m-poster_url">准备页静态封面图 URL</label><input id="m-poster_url" class="mono" spellcheck="false" placeholder="https://.../poster.jpg"></div>
+        <div class="field"><label for="m-voice_speed">语速（0.5–2.0，可选）</label><input id="m-voice_speed" class="mono" type="number" step="0.1" min="0.5" max="2" placeholder="1.0"></div>
+        <div class="note">⚠️ 保存时会按当前准备话术生成并缓存一段本地 prep 音频；候选人在准备页切换面试官时优先播放这段缓存音频，真正开始面试后才连接 LiveAvatar。</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>平台接入</h2><span class="hint">选择这位面试官连接 LiveAvatar 的凭证来源</span></div>
+      <div class="card-body">
+        <div class="platform-choice" role="radiogroup" aria-label="平台配置来源">
+          <label class="platform-option">
+            <input id="platform-use-global" type="radio" name="platform-source" value="global" checked onchange="onAvatarPlatformModeChange()">
+            <span><strong>使用全局平台配置</strong><span>默认选项，统一继承控制台中的平台地址、环境与 API Key。</span></span>
+          </label>
+          <label class="platform-option">
+            <input id="platform-use-custom" type="radio" name="platform-source" value="custom" onchange="onAvatarPlatformModeChange()">
+            <span><strong>使用独立平台配置</strong><span>仅这位面试官使用另一套 LiveAvatar 账户或环境。</span></span>
+          </label>
+        </div>
+        <div id="platform-global-summary" class="platform-summary">正在读取全局平台配置…</div>
+        <div id="platform-custom-fields" class="platform-custom" hidden>
+          <div class="field">
+            <label for="platform-custom-api-key">API Key</label>
+            <input id="platform-custom-api-key" class="mono" autocomplete="off" spellcheck="false" placeholder="lk_live_...">
+            <div class="note">已保存的密钥显示为 ••••尾号；重新输入才会覆盖。独立配置不会影响其他面试官。</div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="platform-custom-base-url">平台地址</label>
+              <input id="platform-custom-base-url" class="mono" spellcheck="false" placeholder="https://facemarket.ai/vih/dispatcher">
+            </div>
+            <div class="field">
+              <label for="platform-custom-sandbox">环境</label>
+              <select id="platform-custom-sandbox">
+                <option value="">正式环境</option>
+                <option value="true">沙箱环境</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="test-row">
+          <button id="avatar-test-btn" type="button" onclick="testAvatar()">测试当前连接</button>
+          <span class="test-result" id="avatar-test-result"></span>
+        </div>
+        <div class="note">测试会使用当前选择的配置和上方 Avatar ID 创建一次数字人会话，验证成功后自动释放。</div>
+      </div>
+    </div>
     <div class="card">
       <div class="card-head"><h2>基本信息</h2></div>
       <div class="card-body">
@@ -203,66 +316,60 @@
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>面试官人设</h2><span class="hint">自动注入所有 LLM 提示词 — 下方预览可见</span></div>
+      <div class="card-head"><h2>面试流程</h2><span class="hint">开场时按简历 + JD 现场生成：自我介绍 → 简历经历深挖 → 业务题</span></div>
       <div class="card-body">
         <div class="row2">
-          <div class="field"><label for="f-iname">姓名</label><input id="f-iname"></div>
-          <div class="field"><label for="f-istyle">风格</label><input id="f-istyle" placeholder="专业、克制、适度追问"></div>
+          <div class="field"><label for="pl-resume_experiences">简历深挖段数</label>
+            <input id="pl-resume_experiences" type="number" min="0" max="6" step="1">
+            <div class="note">挑简历中最贴 JD 的 N 段经历各问一题；候选人没上传简历时自动跳过此环节</div></div>
+          <div class="field"><label for="pl-business_questions">业务题数量</label>
+            <input id="pl-business_questions" type="number" min="0" max="10" step="1">
+            <div class="note">优先从题库按 JD 相关性挑选；题库为空则按 JD 现场生成</div></div>
         </div>
-        <div class="field"><label for="f-irules">面试规则（每行一条）</label>
-          <textarea id="f-irules" rows="4"></textarea></div>
+        <div class="row3">
+          <div class="field"><label for="pl-resume_followups">简历经历追问上限</label>
+            <input id="pl-resume_followups" type="number" min="0" max="5" step="1">
+            <div class="note">每段经历最多追问几次</div></div>
+          <div class="field"><label for="pl-business_followups">业务题追问上限</label>
+            <input id="pl-business_followups" type="number" min="0" max="5" step="1">
+            <div class="note">每道业务题最多追问几次</div></div>
+          <div class="field"><label for="pl-self_intro_followups">自我介绍追问上限</label>
+            <input id="pl-self_intro_followups" type="number" min="0" max="5" step="1">
+            <div class="note">候选人有简历时</div></div>
+        </div>
+        <div class="field" style="max-width:330px"><label for="pl-self_intro_followups_no_resume">自我介绍追问上限（无简历时）</label>
+          <input id="pl-self_intro_followups_no_resume" type="number" min="0" max="5" step="1">
+          <div class="note">没上传简历时改从自我介绍里多追问几轮来挖掘经历</div></div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-head"><h2>候选人画像</h2></div>
-      <div class="card-body">
-        <div class="field"><label for="f-role">目标岗位</label><input id="f-role"></div>
-        <div class="field"><label for="f-background">背景描述</label>
-          <textarea id="f-background" rows="2"></textarea></div>
-      </div>
-    </div>
+  </section>
 
+  <!-- ============ 企业公司知识库 ============ -->
+  <section class="pane" id="pane-company-knowledge">
     <div class="card">
-      <div class="card-head"><h2>最终提示词预览</h2><span class="spacer"></span><span id="preview-status"></span></div>
+      <div class="card-head"><h2>公司知识库</h2><span class="hint">仅企业招聘型虚拟人使用；每个虚拟人独立保存</span></div>
       <div class="card-body">
-        <div class="field"><label>系统提示词（人设 + 知识库渲染后，三个 LLM 环节共用）</label>
-          <pre class="preview-pre" id="preview-system">加载中…</pre></div>
-        <div class="field"><label>开场白（数字人开口的第一句话）</label>
-          <pre class="preview-pre" id="preview-opening"></pre></div>
+        <div id="company-knowledge-list"></div>
+        <button type="button" onclick="addCompanyKnowledge()">＋ 添加知识条目</button>
+        <div class="note">最多 30 条，单条正文 4000 字，总计 30000 字。“可用于面试”可辅助业务出题；“仅内部评估”不会进入问题、口播或候选人页面，也不能因候选人不知道未公开事实而直接扣分。</div>
       </div>
     </div>
   </section>
 
-  <!-- ============ Tab 2: 知识库 ============ -->
-  <section class="pane" id="pane-knowledge">
+  <!-- ============ Tab 2: 岗位与题库 ============ -->
+  <section class="pane" id="pane-positions">
     <div class="card">
       <div class="card-head">
-        <h2>参考资料</h2>
-        <span class="hint">岗位 JD、候选人简历、公司/领域资料 — 面试官提问、追问、评估、写报告时都会参考</span>
+        <h2>岗位与题库</h2>
+        <span class="hint">每个岗位 = 匹配信息 + 核心考察点 + 业务题库；开场时按候选人 JD 匹配到对应岗位使用</span>
       </div>
       <div class="card-body">
-        <div class="row2">
-          <div class="field"><label for="k-max-chars">注入字数上限</label>
-            <input id="k-max-chars" type="number" min="200" step="100">
-            <div class="note">所有启用资料拼接后超过上限会截断，避免提示词过长</div></div>
-          <div class="field"><label>&nbsp;</label><div class="note" id="k-total" style="padding-top:8px"></div></div>
-        </div>
-        <div id="knowledge-list"></div>
-        <div><button type="button" onclick="addKnowledgeEntry()">＋ 添加资料</button></div>
-        <div class="note">知识库通过 {knowledge_block} 占位符注入系统提示词。若你在「提示词模板」里自定义过系统提示词，请确认它包含该占位符，否则资料不会生效（预览里一看便知）。</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ Tab 3: 题库 ============ -->
-  <section class="pane" id="pane-questions">
-    <div class="card">
-      <div class="card-head"><h2>题库与评分维度</h2><span class="hint">YAML 格式</span></div>
-      <div class="card-body">
-        <div class="field">
-          <textarea id="q-yaml" rows="28" class="mono" spellcheck="false"></textarea>
-          <div class="note">每题字段：id / title / prompt（必填），competency、expected_signals、red_flags、max_followups（可选）。保存时做完整校验，坏配置不会落盘。</div>
+        <div id="positions-list"></div>
+        <div><button type="button" onclick="addPosition()">＋ 添加岗位</button></div>
+        <div class="note">
+          <b>核心考察点</b>驱动岗位整体评估；每道<b>业务题</b>可配置独立考察点，题库为空时开场会按 JD 现场生成。
+          候选人的岗位 JD 与简历由本人当场上传，仅本场参考，不在此保存。
         </div>
       </div>
     </div>
@@ -271,26 +378,28 @@
   <!-- ============ Tab 4: 话术与节奏 ============ -->
   <section class="pane" id="pane-speech">
     <div class="card">
-      <div class="card-head"><h2>口播话术</h2><span class="hint">数字人实际说出的话</span></div>
+      <div class="card-head"><h2>口播话术</h2><span class="hint">数字人实际说出的话（开场白已移到「提示词模板」）</span></div>
       <div class="card-body">
-        <div class="field"><label for="s-opening_template">开场白模板</label>
-          <textarea id="s-opening_template" rows="3" class="mono"></textarea>
-          <div class="note">占位符：{interviewer_name} {target_role} {duration_minutes} {title}</div></div>
-        <div class="row2">
-          <div class="field"><label for="s-first_question_transition">第一题转场</label><input id="s-first_question_transition"></div>
-          <div class="field"><label for="s-next_question_transition">下一题转场</label><input id="s-next_question_transition"></div>
+        <div class="field"><label for="s-first_question_transition">第一题转场</label><input id="s-first_question_transition"></div>
+        <div class="field">
+          <label for="s-next_question_transitions">下一题转场（每行一条）</label>
+          <textarea id="s-next_question_transitions" rows="6"></textarea>
+          <div class="note">每场面试随机轮换，全部使用一遍前不会重复；新一轮也不会紧接着重复上一句。</div>
+        </div>
+        <div class="field">
+          <label for="s-follow_up_prefixes">追问衔接词（每行一条）</label>
+          <textarea id="s-follow_up_prefixes" rows="3"></textarea>
+          <div class="note">生成追问时会从这些衔接词中选择；留空则直接播报追问内容。</div>
         </div>
         <div class="field"><label for="s-skip_transition">跳题话术</label><input id="s-skip_transition"></div>
         <div class="row2">
           <div class="field"><label for="s-closing">结束语</label><input id="s-closing"></div>
           <div class="field"><label for="s-termination">提前终止语</label><input id="s-termination"></div>
         </div>
-        <div class="field"><label for="s-answer_acknowledgements">答后衔接语（每行一条，随机选用）</label>
-          <textarea id="s-answer_acknowledgements" rows="4"></textarea></div>
-        <div class="field"><label for="s-final_answer_acknowledgements">最后一题衔接语（每行一条）</label>
-          <textarea id="s-final_answer_acknowledgements" rows="3"></textarea></div>
-        <div class="field"><label for="s-follow_up_prefixes">追问前缀（每行一条）</label>
-          <textarea id="s-follow_up_prefixes" rows="4"></textarea></div>
+        <div class="hint" style="margin-top:6px">
+          答后衔接 / 最后一题衔接已关闭，数字人不会播报。
+          跳题话术 / 思考中提醒虚拟人会说出来，但对话页面不展示具体文案。
+        </div>
       </div>
     </div>
 
@@ -318,11 +427,15 @@
             <input id="w-prompt_playback_timeout_seconds" type="number" min="5"></div>
           <div class="field"><label for="w-evaluation_join_timeout_seconds">评估汇合超时（秒）</label>
             <input id="w-evaluation_join_timeout_seconds" type="number" min="1"></div>
+          <div class="field"><label for="w-foreground_evaluation_timeout_seconds">追问判断等待上限（秒）</label>
+            <input id="w-foreground_evaluation_timeout_seconds" type="number" min="0.5" max="6" step="0.1">
+            <div class="note">等待 AI 结合当前回答生成具体追问；建议 5 秒，过短会直接进入下一题</div></div>
         </div>
         <div class="field">
           <label>思考提醒（第 N 秒 → 提醒话术）</label>
           <div id="thinking-checks"></div>
           <button class="small" style="margin-top:6px" type="button" onclick="addCheckRow()">＋ 添加提醒</button>
+          <div class="note">虚拟人会说出提醒文案，但不会在候选人对话页面显示具体文字。</div>
         </div>
       </div>
     </div>
@@ -331,36 +444,132 @@
   <!-- ============ Tab 5: 提示词模板 ============ -->
   <section class="pane" id="pane-prompts">
     <div class="card">
-      <div class="card-head"><h2>LLM 提示词模板</h2><span class="hint">高级 — 日常配置用「面试设定」和「知识库」即可，一般无需修改这里</span></div>
+      <div class="card-head"><h2>提示词模板</h2><span class="hint">这里统一管理面试官人设、开场/第一题、各类 LLM 提示词以及最终预览</span></div>
       <div class="card-body">
-        <div class="legend">
-          可用占位符 — 人设与知识库：<b>{interviewer_name}</b> <b>{interviewer_style}</b> <b>{interviewer_rules}</b>
-          <b>{target_role}</b> <b>{candidate_background}</b> <b>{title}</b> <b>{duration_minutes}</b>
-          <b>{knowledge}</b> <b>{knowledge_block}</b><br>
-          运行时：评估 <b>{question}</b> <b>{answer}</b> <b>{rubric_dimensions}</b> <b>{transcript}</b> ·
-          追问 <b>{payload}</b> · 报告 <b>{rubric_dimensions}</b> <b>{termination_reason}</b> <b>{transcript}</b><br>
-          字面花括号无需转义，未知占位符原样保留
+        <div class="field">
+          <label>可用占位符总览</label>
+          <div class="legend">
+            人设与岗位：<b>{avatar_name}</b> <b>{interviewer_name}</b> <b>{interviewer_style}</b> <b>{interviewer_rules}</b>
+            <b>{target_role}</b> <b>{candidate_background}</b> <b>{title}</b> <b>{duration_minutes}</b>
+            <b>{position}</b> <b>{core_competencies}</b> <b>{candidate_brief}</b> <b>{knowledge_block}</b><br>
+            兼容别名：<b>{jd}</b> <b>{resume}</b>（仅映射提炼后的精简字段，不包含原文）<br>
+            运行时：评估 <b>{question}</b> <b>{answer}</b> <b>{transcript}</b> ·
+            追问 <b>{payload}</b> · 报告 <b>{termination_reason}</b> <b>{transcript}</b><br>
+            字面花括号无需转义，未知占位符原样保留
+          </div>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>面试官人设</h2><span class="hint">会自动注入系统提示词、出题、追问、评估、报告和结束点评</span></div>
+      <div class="card-body">
+        <div class="row2">
+          <div class="field"><label for="f-iname">姓名</label><input id="f-iname"></div>
+          <div class="field"><label for="f-istyle">风格</label><input id="f-istyle" placeholder="专业、克制、适度追问"></div>
+        </div>
+        <div class="field"><label for="f-irules">面试规则（每行一条）</label>
+          <textarea id="f-irules" rows="4"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>准备阶段与开场</h2><span class="hint">准备阶段只播 prep 话术；点击开始面试后，才依次进入开场白和第一题</span></div>
+      <div class="card-body">
+        <div class="field">
+          <label>准备阶段话术（候选人填写信息时，面试官可主动说的一段话）</label>
+          <textarea id="s-prep_template" rows="2" class="mono"></textarea>
+          <div class="note">仅在准备页播放。建议使用 <b>{avatar_name}</b> 展示当前虚拟人的名称；也可使用 {interviewer_name}。</div>
+        </div>
+        <div class="field">
+          <label>开场白模板（数字人开口的第一句话 · 非 LLM 环节，仅做占位符替换）</label>
+          <textarea id="s-opening_template" rows="3" class="mono"></textarea>
+          <div class="note">占位符：{interviewer_name} {target_role} {duration_minutes} {title}</div></div>
+        <div class="field">
+          <label>自我介绍问题（面试第一题 · 非 LLM 环节）</label>
+          <textarea id="s-self_intro_prompt" rows="2" class="mono"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>系统与出题</h2><span class="hint">优先配置最上游提示词：系统提示词会影响后续所有 LLM 环节，出题提示词决定整场题单</span></div>
+      <div class="card-body">
         <div class="field">
           <label style="display:flex;align-items:center;gap:8px">系统提示词（三个 LLM 环节共用）
             <span class="badge" id="badge-system">默认</span><span style="flex:1"></span>
             <button class="small" type="button" id="restore-system" onclick="restoreDefault('system')">恢复默认</button></label>
           <textarea id="p-system" rows="6" class="mono"></textarea></div>
+        <div class="legend" style="margin-top:2px">
+          出题提示词专用占位符：<b>{candidate_brief}</b> <b>{target_role}</b>
+          <b>{resume_experiences}</b> <b>{business_questions}</b> <b>{question_bank}</b> ·
+          要求 LLM 返回 JSON：<b>resumeQuestions</b> / <b>businessQuestions</b>（业务题可带 <b>bankId</b> 引用题库题）
+        </div>
         <div class="field">
-          <label style="display:flex;align-items:center;gap:8px">回答评估提示词
-            <span class="badge" id="badge-evaluator">默认</span><span style="flex:1"></span>
-            <button class="small" type="button" id="restore-evaluator" onclick="restoreDefault('evaluator')">恢复默认</button></label>
-          <textarea id="p-evaluator" rows="6" class="mono"></textarea></div>
+          <label style="display:flex;align-items:center;gap:8px">出题提示词（开场时按简历/JD 生成问题清单）
+            <span class="badge" id="badge-planner">默认</span><span style="flex:1"></span>
+            <button class="small" type="button" id="restore-planner" onclick="restoreDefault('planner')">恢复默认</button></label>
+          <textarea id="p-planner" rows="8" class="mono"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>追问与评估</h2><span class="hint">控制候选人回答后的追问逻辑，以及每题结束后的评估方式</span></div>
+      <div class="card-body">
         <div class="field">
           <label style="display:flex;align-items:center;gap:8px">追问判定提示词
             <span class="badge" id="badge-follow_up_decider">默认</span><span style="flex:1"></span>
             <button class="small" type="button" id="restore-follow_up_decider" onclick="restoreDefault('follow_up_decider')">恢复默认</button></label>
           <textarea id="p-follow_up_decider" rows="5" class="mono"></textarea></div>
         <div class="field">
-          <label style="display:flex;align-items:center;gap:8px">最终报告提示词
-            <span class="badge" id="badge-report">默认</span><span style="flex:1"></span>
-            <button class="small" type="button" id="restore-report" onclick="restoreDefault('report')">恢复默认</button></label>
-          <textarea id="p-report" rows="6" class="mono"></textarea></div>
+          <label style="display:flex;align-items:center;gap:8px">回答评估提示词
+            <span class="badge" id="badge-evaluator">默认</span><span style="flex:1"></span>
+            <button class="small" type="button" id="restore-evaluator" onclick="restoreDefault('evaluator')">恢复默认</button></label>
+          <textarea id="p-evaluator" rows="6" class="mono"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>结束点评提示词</h2><span class="hint">用于生成面试结束时数字人口播的简短复盘，区别于候选人可查看的书面报告</span></div>
+      <div class="card-body">
+        <div class="legend" style="margin-top:2px">
+          结束点评占位符：<b>{interviewer_name}</b> <b>{target_role}</b> <b>{summary}</b>
+          <b>{strengths}</b> <b>{weaknesses}</b> <b>{overall_score}</b> ·
+          面试结束时数字人口播的一段简短总评，由大模型根据本场表现生成（区别于可查看的书面报告）
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px">结束点评提示词（面试结束时口播的总评 / 复盘）
+            <span class="badge" id="badge-closing_comment">默认</span><span style="flex:1"></span>
+            <button class="small" type="button" id="restore-closing_comment" onclick="restoreDefault('closing_comment')">恢复默认</button></label>
+          <textarea id="p-closing_comment" rows="7" class="mono"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>最终提示词预览</h2><span class="spacer"></span><span id="preview-status"></span></div>
+      <div class="card-body">
+        <div class="field"><label>模板汇总预览（将当前页面配置的全部提示词按运行顺序拼接展示；保留动态占位符）</label>
+          <pre class="preview-pre" id="preview-system">加载中…</pre></div>
+        <div class="note">这里只做汇总预览，不再单独重复展示开场白。动态内容会保留为占位符，例如 {position} / {candidate_brief}。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Tab 6: 实时日志 ============ -->
+  <section class="pane" id="pane-logs">
+    <div class="card">
+      <div class="card-head">
+        <h2>面试 Agent 实时日志</h2>
+        <span class="hint">查看语音输入、ASR 转写、LLM 调用等实时日志信息</span>
+        <span class="spacer"></span>
+        <button type="button" class="small" id="refresh-logs-btn" onclick="refreshLogs()">🔄 刷新</button>
+        <button type="button" class="small" id="auto-refresh-btn" onclick="toggleAutoRefresh()">⏱️ 自动刷新</button>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>实时日志</label>
+          <pre id="logs-display" class="preview-pre" style="height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">等待加载日志…</pre>
+        </div>
       </div>
     </div>
   </section>
